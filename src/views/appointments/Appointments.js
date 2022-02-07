@@ -60,7 +60,7 @@ const Appointments = (props) => {
     setRequesting(true);
     axios.get(get_patients_url).then((response) => {
       var appointmentList = [];
-      response.data.entry.forEach((item, index) => {
+      response.data.entry?.forEach((item, index) => {
           console.log(item)
         appointmentList.push({
             // name: item.resource?.name[0]?.given?.join(' '),
@@ -72,7 +72,7 @@ const Appointments = (props) => {
         })
       })
       console.log(response);
-      console.log(appointmentsList)
+      console.log(appointmentList)
       setRequesting(false);
       setAppointmentsList(appointmentList);
     })
@@ -173,11 +173,11 @@ const Appointments = (props) => {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Name</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">DOB</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Gender</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">ID</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Start</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">End</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Links</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Comment</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
@@ -187,17 +187,15 @@ const Appointments = (props) => {
                       return (
                         <CTableRow key={item.id}>
                           <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
-                          <CTableDataCell>{item.name}</CTableDataCell>
-                          <CTableDataCell>{item.dob}</CTableDataCell>
-                          <CTableDataCell>{item.gender}</CTableDataCell>
-                          <CTableDataCell>{item.isActive ? 'Active' : 'Inactive'}</CTableDataCell>
+                          <CTableDataCell>{item.id}</CTableDataCell>
+                          <CTableDataCell>{item.start}</CTableDataCell>
+                          <CTableDataCell>{item.end}</CTableDataCell>
+                          <CTableDataCell>{item.status}</CTableDataCell>
                           <CTableDataCell>
-                            <small><a href='#'>Appointments</a> &nbsp;</small>
-                            {/* <small><a href='#'>Measurements</a> &nbsp; </small>
-                            <small><a href='#'>Care Plans</a></small> */}
+                            {item.comment}
                           </CTableDataCell>
                           <CTableDataCell>
-                            <a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit Patient</a>
+                            <a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit Appointment</a>
                           </CTableDataCell>
 
                         </CTableRow>
