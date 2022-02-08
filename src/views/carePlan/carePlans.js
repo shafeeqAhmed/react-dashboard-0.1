@@ -176,6 +176,7 @@ const Appointments = (props) => {
                     <CTableHeaderCell scope="col">Title</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Intent</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Action</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
@@ -213,10 +214,10 @@ const Appointments = (props) => {
                   <CFormLabel htmlFor="title">Title</CFormLabel>
                   <CFormInput onChange={(e) => setTitle(e.target.value)} type="text" id="title" />
                 </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="intent">Intent</CFormLabel>
-                  <CFormInput onChange={(e) => setIntent(e.target.value)} type="text" id="intent" />
-                </CCol>
+                {/*<CCol md={6}>*/}
+                {/*  <CFormLabel htmlFor="intent">Intent</CFormLabel>*/}
+                {/*  <CFormInput onChange={(e) => setIntent(e.target.value)} type="text" id="intent" />*/}
+                {/*</CCol>*/}
                 <CCol md={6}>
                   <CFormLabel htmlFor="cmsid">CMS ID</CFormLabel>
                   <CFormInput onChange={(e) => setCmsId(e.target.value)} type="text" id="cmsid" />
