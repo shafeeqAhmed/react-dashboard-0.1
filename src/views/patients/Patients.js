@@ -41,6 +41,9 @@ const Patients = () => {
   const [requesting, setRequesting] = useState(false);
   const [visible, setVisible] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
+  const [deleteVisible, setDeleteVisible] = useState(false)
+
+  
 
   // new patient fields
   const [firstName, setFirstName] = useState("");
@@ -61,6 +64,10 @@ const Patients = () => {
   const history = useHistory()
 
   useEffect(() => {
+    fetchPatients();
+  }, [])
+
+  const fetchPatients = () => {
     let get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient';
     setRequesting(true);
     axios.get(get_patients_url).then((response) => {
@@ -78,7 +85,7 @@ const Patients = () => {
       setRequesting(false);
       setPatients(patientsList);
     })
-  }, [])
+  }
 
   const addPatient = () => {
     const data = {
@@ -109,19 +116,6 @@ const Patients = () => {
   const setAndEditModal = (item) => {
     console.log('item', item);
      var names = item.name.split(' ')
-    // let editObjectSchema = {
-    //   "resourceType": "Patient",
-    //   "active": item.isActive,
-    //   "name": [
-    //     {
-    //       "use": "official",
-    //       "family": names[names.length-1],
-    //       "given": names
-    //     }
-    //   ],
-    //   "gender": item.gender,
-    //   "birthDate": item.dob
-    // }
 
     setEditFirstName(names[0])
     setEditLastName(names[1] ?? "")
@@ -169,6 +163,20 @@ const Patients = () => {
   }
   const patientMeasurement = (id) => {
     history.push("/measurements?patient_id="+id);
+  }
+
+  const deletePatient = () => {
+    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Patient/'+selectedPatientId;
+    setRequesting(true);
+    axios.delete(delete_patient_url).then((response) => {
+      setRequesting(false);
+      setDeleteVisible(false);
+      fetchPatients();
+    }).catch((err) => {
+      setRequesting(false);
+      setDeleteVisible(false);
+      fetchPatients();
+    })
   }
 
 
@@ -230,7 +238,7 @@ const Patients = () => {
                             <CButton
                               color="danger"
                               variant="outline"
-                              onClick={() => setAndEditModal(item)}
+                              onClick={() => {setDeleteVisible(true); setSelectedPatientId(item.id)}}
                             >
                               Delete
                             </CButton>
@@ -335,6 +343,31 @@ const Patients = () => {
         <CButton color="primary" onClick={() => editPatient()}>Save changes</CButton>
       </CModalFooter>
     </CModal>
+
+
+
+    <CModal visible={deleteVisible} onClose={() => setDeleteVisible(false)}>
+      <CModalHeader onClose={() => setDeleteVisible(false)}>
+        <CModalTitle>Confirmation</CModalTitle>
+      </CModalHeader>
+      <CModalBody>
+
+      <CCol xs={12}>
+        <CCard className="mb-4">
+          <CCardBody>
+              Are you sure you want to delete?
+          </CCardBody>
+        </CCard>
+      </CCol>
+      </CModalBody>
+      <CModalFooter>
+        <CButton color="secondary" onClick={() => setDeleteVisible(false)}>
+          Close
+        </CButton>
+        <CButton color="primary" onClick={() => deletePatient()}>Confirm Delete</CButton>
+      </CModalFooter>
+    </CModal>
+
 
     </CRow>
   )
