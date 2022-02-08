@@ -37,10 +37,8 @@ const Appointments = (props) => {
   const [editVisible, setEditVisible] = useState(false)
 
   // new patient fields
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [dob, setDob] = useState("");
-  const [gender, setGender] = useState("");
+  const [title, setTitle] = useState("");
+  const [intent, setIntent] = useState("");
   const [status, setStatus] = useState(false);
 
   const [editFirstName, setEditFirstName] = useState("");
@@ -61,8 +59,6 @@ const Appointments = (props) => {
     axios.get(get_patients_url).then((response) => {
       var carePlans = [];
       response.data.entry?.forEach((item, index) => {
-          console.log(item)
-        carePlans.push(item)
         carePlans.push({
             // name: item.resource?.name[0]?.given?.join(' '),
             id: item.resource.id,
@@ -78,21 +74,23 @@ const Appointments = (props) => {
     })
   }, [])
 
-  const addPatient = () => {
+  const addCarePlan = () => {
+    const patient_id = new URLSearchParams(search).get('patient_id');
+
     const data = {
-      "resourceType": "Patient",
+      "resourceType": "CarePlan",
+      "id": patient_id,
       "active": status == 'on'? true:false,
+      "subject":{
+        "reference":"Patient/"+patient_id
+      },
       "name": [
         {
           "use": "official",
-          "family": lastName,
-          "given": [
-            firstName, lastName
-          ]
+          "intent": intent,
+          "title": title,
         }
       ],
-      "gender": gender,
-      "birthDate": dob
     }
 
     axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=Patient', data).then((response) => {
@@ -212,15 +210,15 @@ const Appointments = (props) => {
               <CForm className="row g-3">
                 <CCol md={6}>
                   <CFormLabel htmlFor="inputEmail4">Title</CFormLabel>
-                  <CFormInput onChange={(e) => setFirstName(e.target.value)} type="text" id="inputEmail4" />
+                  <CFormInput onChange={(e) => setTitle(e.target.value)} type="text" id="inputEmail4" />
                 </CCol>
                 <CCol md={6}>
                   <CFormLabel htmlFor="inputPassword4">Intent</CFormLabel>
-                  <CFormInput onChange={(e) => setLastName(e.target.value)} type="text" id="inputPassword4" />
+                  <CFormInput onChange={(e) => setIntent(e.target.value)} type="text" id="inputPassword4" />
                 </CCol>
                 <CCol md={6}>
                   <CFormLabel htmlFor="inputState">Status</CFormLabel>
-                  <CFormSelect onChange={(e) => setGender(e.target.value)} id="inputState">
+                  <CFormSelect onChange={(e) => setStatus(e.target.value)} id="inputState">
                     <option>Choose...</option>
                     <option value='true'>Active</option>
                     <option value='false'>InActive</option>
@@ -235,7 +233,7 @@ const Appointments = (props) => {
         <CButton color="secondary" onClick={() => setVisible(false)}>
           Close
         </CButton>
-        <CButton color="primary" onClick={() => addPatient()}>Save changes</CButton>
+        <CButton color="primary" onClick={() => addCarePlan()}>Save changes</CButton>
       </CModalFooter>
     </CModal>
 
