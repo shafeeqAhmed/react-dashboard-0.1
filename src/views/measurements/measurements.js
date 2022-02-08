@@ -24,20 +24,14 @@ import {
   CForm,
   CFormLabel,
   CFormCheck,
-  CFormSelect,
-  CDropdown,
-  CDropdownToggle,
-  CDropdownMenu,
-  CDropdownItem
+  CFormSelect
 } from '@coreui/react'
 import { DocsCallout, DocsExample } from 'src/components'
-import { Link, useHistory} from 'react-router-dom'
-import CIcon from "@coreui/icons-react";
-import {cilBell} from "@coreui/icons";
+import { Link, useLocation } from 'react-router-dom'
 
-const Patients = () => {
+const Appointments = (props) => {
 
-  const [patients, setPatients] = useState([]);
+  const [carePlansList, setCarePlansList] = useState([]);
   const [requesting, setRequesting] = useState(false);
   const [visible, setVisible] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
@@ -57,26 +51,30 @@ const Patients = () => {
   const [editPatientObject, setEditPatientObject] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState(false);
   const [editSchema, setEditSchema] = useState(false);
+  const search = useLocation().search;
 
-  const history = useHistory()
 
   useEffect(() => {
-    let get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient';
+    const patient_id = new URLSearchParams(search).get('patient_id');
+    let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Observation&subject=Patient/${patient_id}`;
     setRequesting(true);
     axios.get(get_patients_url).then((response) => {
-      var patientsList = [];
-      response.data.entry.forEach((item, index) => {
-        patientsList.push({
-            name: item.resource?.name[0]?.given?.join(' '),
-            dob: item.resource?.birthDate,
-            isActive: item.resource?.active,
-            gender: item.resource?.gender,
-            id: item.resource?.id
+      var carePlans = [];
+      response.data.entry?.forEach((item, index) => {
+          console.log(item)
+        carePlans.push(item)
+        carePlans.push({
+            // name: item.resource?.name[0]?.given?.join(' '),
+            id: item.resource.id,
+            title: item.resource.title,
+            intent: item.resource.intent,
+            status: item.resource.status,
         })
       })
-      console.log(patientsList)
+      console.log(carePlans);
+      // console.log(appointmentList)
       setRequesting(false);
-      setPatients(patientsList);
+      setCarePlansList(carePlans);
     })
   }, [])
 
@@ -161,24 +159,13 @@ const Patients = () => {
 
   }
 
-  const patientAppointments = (id) => {
-    history.push("/appointments?patient_id="+id);
-  }
-  const patientCarePlan = (id) => {
-    history.push("/CarePlans?patient_id="+id);
-  }
-  const patientMeasurement = (id) => {
-    history.push("/measurements?patient_id="+id);
-  }
-
-
   return (
     <CRow>
       <CCol xs={12}>
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>Patients</strong> <small>listing</small>
-            <CButton style={{float: 'right'}} onClick={() => setVisible(!visible)}>Add Patient</CButton>
+            <strong>Measurement</strong> <small>listing</small>
+            <CButton style={{float: 'right'}} onClick={() => setVisible(!visible)}>Add Measuremet</CButton>
 
           </CCardHeader>
           <CCardBody>
@@ -186,56 +173,25 @@ const Patients = () => {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Name</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">DOB</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Gender</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">ID</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Title</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Intent</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Links</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
                   { requesting && <CSpinner/> }
-                    {patients.map((item, index) => {
+                    {carePlansList?.map((item, index) => {
                       return (
                         <CTableRow key={item.id}>
                           <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
-                          <CTableDataCell>{item.name}</CTableDataCell>
-                          <CTableDataCell>{item.dob}</CTableDataCell>
-                          <CTableDataCell>{item.gender}</CTableDataCell>
-                          <CTableDataCell>{item.isActive ? 'Active' : 'Inactive'}</CTableDataCell>
+                          <CTableDataCell>{item.id}</CTableDataCell>
+                          <CTableDataCell>{item.title}</CTableDataCell>
+                          <CTableDataCell>{item.intent}</CTableDataCell>
+                          <CTableDataCell>{item.status}</CTableDataCell>
                           <CTableDataCell>
-                            {/*<a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit Patient</a>*/}
-                            <CDropdown>
-                              <CDropdownToggle href="#" color="primary">
-                                View Links
-                              </CDropdownToggle>
-                              <CDropdownMenu>
-                                <CDropdownItem href='javascript:void(0)' onClick={() => patientAppointments(item.id)}>Appointments</CDropdownItem>
-                                <CDropdownItem href='javascript:void(0)' onClick={() => patientMeasurement(item.id)}>Measurements</CDropdownItem>
-                                <CDropdownItem href='javascript:void(0)' onClick={() => patientCarePlan(item.id)}>Care plans</CDropdownItem>
-                              </CDropdownMenu>
-                            </CDropdown>
+                            <a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit</a>
                           </CTableDataCell>
-
-                          <CTableDataCell>
-                            <CButton
-                              color="success"
-                              variant="outline"
-                              className="m-2"
-                              onClick={() => setAndEditModal(item)}
-                            >
-                              Edit
-                            </CButton>
-                            <CButton
-                              color="danger"
-                              variant="outline"
-                              onClick={() => setAndEditModal(item)}
-                            >
-                              Delete
-                            </CButton>
-                          </CTableDataCell>
-
                         </CTableRow>
                       )
                     })}
@@ -246,7 +202,7 @@ const Patients = () => {
       </CCol>
     <CModal visible={visible} onClose={() => setVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
-        <CModalTitle>Add Patient</CModalTitle>
+        <CModalTitle>Add Measurement</CModalTitle>
       </CModalHeader>
       <CModalBody>
 
@@ -255,27 +211,20 @@ const Patients = () => {
           <CCardBody>
               <CForm className="row g-3">
                 <CCol md={6}>
-                  <CFormLabel htmlFor="inputEmail4">First name</CFormLabel>
+                  <CFormLabel htmlFor="inputEmail4">Title</CFormLabel>
                   <CFormInput onChange={(e) => setFirstName(e.target.value)} type="text" id="inputEmail4" />
                 </CCol>
                 <CCol md={6}>
-                  <CFormLabel htmlFor="inputPassword4">Last name</CFormLabel>
+                  <CFormLabel htmlFor="inputPassword4">Intent</CFormLabel>
                   <CFormInput onChange={(e) => setLastName(e.target.value)} type="text" id="inputPassword4" />
                 </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="inputAddress">Date of birth</CFormLabel>
-                  <CFormInput type="date" onChange={(e) => setDob(e.target.value)} id="inputAddress" placeholder="1234 Main St" />
-                </CCol>
                 <CCol md={6}>
-                  <CFormLabel htmlFor="inputState">Gender</CFormLabel>
+                  <CFormLabel htmlFor="inputState">Status</CFormLabel>
                   <CFormSelect onChange={(e) => setGender(e.target.value)} id="inputState">
                     <option>Choose...</option>
-                    <option value='male'>Male</option>
-                    <option value='female'>Female</option>
+                    <option value='true'>Active</option>
+                    <option value='false'>InActive</option>
                   </CFormSelect>
-                </CCol>
-                <CCol xs={12}>
-                  <CFormCheck type="checkbox" onChange={(e) => setStatus(e.target.value)} id="gridCheck" label="Active" />
                 </CCol>
               </CForm>
           </CCardBody>
@@ -340,4 +289,4 @@ const Patients = () => {
   )
 }
 
-export default Patients
+export default Appointments

@@ -53,6 +53,8 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 // my routes
 const Patients = React.lazy(() => import('./views/patients/Patients'))
 const Appointments = React.lazy(() => import('./views/appointments/Appointments'))
+const CarePlans = React.lazy(() => import('./views/carePlan/carePlans'))
+const Measurements = React.lazy(() => import('./views/measurements/measurements'))
 
 
 const routes = [
@@ -101,7 +103,9 @@ const routes = [
   { path: '/notifications/toasts', name: 'Toasts', component: Toasts },
   { path: '/widgets', name: 'Widgets', component: Widgets },
   { path: '/patients', name: 'Patients', component: Patients },
-  { path: '/appointments', name: 'Appointments', component: Appointments }
+  { path: '/appointments', name: 'Appointments', component: Appointments },
+  { path: '/CarePlans', name: 'Care Plans', component: CarePlans },
+  { path: '/measurements', name: 'Measurement', component: Measurements }
 ]
 
 export default routes

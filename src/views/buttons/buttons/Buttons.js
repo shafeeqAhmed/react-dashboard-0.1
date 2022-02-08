@@ -89,7 +89,7 @@ const Buttons = () => {
                         disabled={state === 'disabled'}
                       >
                         <CIcon icon={cilBell} className="me-2" />
-                        {color.charAt(0).toUpperCase() + color.slice(1)}
+                        {color.charAt(0).toUpperCase() + color.slice(1)} abc
                       </CButton>
                     ))}
                     <CButton color="link">
