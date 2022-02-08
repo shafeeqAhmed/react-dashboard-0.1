@@ -35,13 +35,15 @@ const Appointments = (props) => {
   const [requesting, setRequesting] = useState(false);
   const [visible, setVisible] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
+  const [deleteVisible, setDeleteVisible] = useState(false)
 
   // new patient fields
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [dob, setDob] = useState("");
-  const [gender, setGender] = useState("");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [comment, setComment] = useState("");
+  const [description, setDescription] = useState("");
   const [status, setStatus] = useState(false);
+  
 
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
@@ -52,10 +54,12 @@ const Appointments = (props) => {
   const [selectedPatientId, setSelectedPatientId] = useState(false);
   const [editSchema, setEditSchema] = useState(false);
   const search = useLocation().search;
+  const [patientId, setPatientId] = useState(false)
 
 
   useEffect(() => {
     const patient_id = new URLSearchParams(search).get('patient_id');
+    setPatientId(patient_id)
     let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Appointment&actor=Patient/${patient_id}&_sort=appointment-sort-start`;
     setRequesting(true);
     axios.get(get_patients_url).then((response) => {
@@ -79,23 +83,43 @@ const Appointments = (props) => {
   }, [])
 
   const addPatient = () => {
-    const data = {
-      "resourceType": "Patient",
-      "active": status == 'on'? true:false,
-      "name": [
-        {
-          "use": "official",
-          "family": lastName,
-          "given": [
-            firstName, lastName
-          ]
-        }
-      ],
-      "gender": gender,
-      "birthDate": dob
+    // const data = {
+    //   "resourceType": "Patient",
+    //   "active": status == 'on'? true:false,
+    //   "name": [
+    //     {
+    //       "use": "official",
+    //       "family": lastName,
+    //       "given": [
+    //         firstName, lastName
+    //       ]
+    //     }
+    //   ],
+    //   "gender": gender,
+    //   "birthDate": dob
+    // }
+
+    const data1 = {
+      "resourceType": "Appointment",
+        "status": "booked",
+        
+        // "appointmentType": {
+        //     "coding": [
+        //         {
+        //             "system": "http://terminology.hl7.org/CodeSystem/v2-0276",
+        //             "code": "FOLLOWUP",
+        //             "display": "A follow up visit from a previous appointment"
+        //         }
+        //     ]
+        // },
+        "priority": 5,
+        "description": "Discussion on the results of your recent MRI",
+        "start": "2021-12-15T12:00:00+00:00",
+        "end": "2021-12-15T12:30:00+00:00",
+        "comment": "Further expand on the results of the MRI and determine the next actions that may be appropriate."    
     }
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=Patient', data).then((response) => {
+    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}`, data1).then((response) => {
       console.log(response);
       setVisible(false)
     }).catch((e)=>{
@@ -107,19 +131,6 @@ const Appointments = (props) => {
   const setAndEditModal = (item) => {
     console.log('item', item);
      var names = item.name.split(' ')
-    // let editObjectSchema = {
-    //   "resourceType": "Patient",
-    //   "active": item.isActive,
-    //   "name": [
-    //     {
-    //       "use": "official",
-    //       "family": names[names.length-1],
-    //       "given": names
-    //     }
-    //   ],
-    //   "gender": item.gender,
-    //   "birthDate": item.dob
-    // }
 
     setEditFirstName(names[0])
     setEditLastName(names[1] ?? "")
@@ -159,13 +170,28 @@ const Appointments = (props) => {
     
   }
 
+
+  const deletePatient = () => {
+    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Patient/'+selectedPatientId;
+    setRequesting(true);
+    axios.delete(delete_patient_url).then((response) => {
+      setRequesting(false);
+      setDeleteVisible(false);
+      // fetchPatients();
+    }).catch((err) => {
+      setRequesting(false);
+      setDeleteVisible(false);
+      // fetchPatients();
+    })
+  }
+
   return (
     <CRow>
       <CCol xs={12}>
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>Patients</strong> <small>listing</small>
-            <CButton style={{float: 'right'}} onClick={() => setVisible(!visible)}>Add Patient</CButton>
+            <strong>Appointments</strong> <small>listing</small>
+            <CButton style={{float: 'right'}} onClick={() => setVisible(!visible)}>Add appointment</CButton>
 
           </CCardHeader>
           <CCardBody>
@@ -208,7 +234,7 @@ const Appointments = (props) => {
       </CCol>
     <CModal visible={visible} onClose={() => setVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
-        <CModalTitle>Add Patient</CModalTitle>
+        <CModalTitle>Add Appointment</CModalTitle>
       </CModalHeader>
       <CModalBody>
 
@@ -217,27 +243,30 @@ const Appointments = (props) => {
           <CCardBody>
               <CForm className="row g-3">
                 <CCol md={6}>
-                  <CFormLabel htmlFor="inputEmail4">First name</CFormLabel>
-                  <CFormInput onChange={(e) => setFirstName(e.target.value)} type="text" id="inputEmail4" />
+                  <CFormLabel htmlFor="inputEmail4">Start</CFormLabel>
+                  <CFormInput type='date' onChange={(e) => setStart(e.target.value)} id="inputEmail4" />
                 </CCol>
                 <CCol md={6}>
                   <CFormLabel htmlFor="inputPassword4">Last name</CFormLabel>
-                  <CFormInput onChange={(e) => setLastName(e.target.value)} type="text" id="inputPassword4" />
-                </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="inputAddress">Date of birth</CFormLabel>
-                  <CFormInput type="date" onChange={(e) => setDob(e.target.value)} id="inputAddress" placeholder="1234 Main St" />
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputState">Gender</CFormLabel>
-                  <CFormSelect onChange={(e) => setGender(e.target.value)} id="inputState">
-                    <option>Choose...</option>
-                    <option value='male'>Male</option>
-                    <option value='female'>Female</option>
-                  </CFormSelect>
+                  <CFormInput type='date' onChange={(e) => setEnd(e.target.value)} id="inputPassword4" />
                 </CCol>
                 <CCol xs={12}>
-                  <CFormCheck type="checkbox" onChange={(e) => setStatus(e.target.value)} id="gridCheck" label="Active" />
+                  <CFormLabel htmlFor="inputAddress">Date of birth</CFormLabel>
+                  <CFormInput type="text" onChange={(e) => setComment(e.target.value)} id="inputAddress" placeholder="" />
+                </CCol>
+                <CCol xs={12}>
+                  <CFormLabel htmlFor="inputAddress">Date of birth</CFormLabel>
+                  <CFormInput type="text" onChange={(e) => setDescription(e.target.value)} id="inputAddress" placeholder="1234 Main St" />
+                </CCol>
+                <CCol md={12}>
+                  <CFormLabel htmlFor="inputState">Status</CFormLabel>
+                  <CFormSelect onChange={(e) => setStatus(e.target.value)} id="inputState">
+                    <option>Choose...</option>
+                    <option value='Booked'>Booked</option>
+                    <option value='Confirmed'>Confirmed</option>
+                    <option value='Completed'>Completed</option>
+                    
+                  </CFormSelect>
                 </CCol>
               </CForm>
           </CCardBody>
