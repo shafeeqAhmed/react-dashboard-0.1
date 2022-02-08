@@ -39,6 +39,7 @@ const Appointments = (props) => {
   // new patient fields
   const [title, setTitle] = useState("");
   const [intent, setIntent] = useState("");
+  const [cmsId, setCmsId ]= useState("");
   const [status, setStatus] = useState(false);
 
   const [editFirstName, setEditFirstName] = useState("");
@@ -79,21 +80,21 @@ const Appointments = (props) => {
 
     const data = {
       "resourceType": "CarePlan",
-      "id": patient_id,
-      "active": status == 'on'? true:false,
+      "identifier":[
+        {
+          "system":"medlix",
+          "value":cmsId,
+        }
+      ],
+
+      "status": 'active',
+      "intent": intent,
+      "title": title,
       "subject":{
         "reference":"Patient/"+patient_id
       },
-      "name": [
-        {
-          "use": "official",
-          "intent": intent,
-          "title": title,
-        }
-      ],
     }
-
-    axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=Patient', data).then((response) => {
+    axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=CarePlan', data).then((response) => {
       console.log(response);
       setVisible(false)
     }).catch((e)=>{
@@ -209,12 +210,16 @@ const Appointments = (props) => {
           <CCardBody>
               <CForm className="row g-3">
                 <CCol md={6}>
-                  <CFormLabel htmlFor="inputEmail4">Title</CFormLabel>
-                  <CFormInput onChange={(e) => setTitle(e.target.value)} type="text" id="inputEmail4" />
+                  <CFormLabel htmlFor="title">Title</CFormLabel>
+                  <CFormInput onChange={(e) => setTitle(e.target.value)} type="text" id="title" />
                 </CCol>
                 <CCol md={6}>
-                  <CFormLabel htmlFor="inputPassword4">Intent</CFormLabel>
-                  <CFormInput onChange={(e) => setIntent(e.target.value)} type="text" id="inputPassword4" />
+                  <CFormLabel htmlFor="intent">Intent</CFormLabel>
+                  <CFormInput onChange={(e) => setIntent(e.target.value)} type="text" id="intent" />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="cmsid">CMS ID</CFormLabel>
+                  <CFormInput onChange={(e) => setCmsId(e.target.value)} type="text" id="cmsid" />
                 </CCol>
                 <CCol md={6}>
                   <CFormLabel htmlFor="inputState">Status</CFormLabel>
