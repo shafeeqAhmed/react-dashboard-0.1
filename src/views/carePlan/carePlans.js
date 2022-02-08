@@ -88,7 +88,7 @@ const Appointments = (props) => {
       ],
 
       "status": 'active',
-      "intent": intent,
+      "intent": 'order',
       "title": title,
       "subject":{
         "reference":"Patient/"+patient_id
