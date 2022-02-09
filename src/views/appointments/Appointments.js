@@ -133,7 +133,7 @@ const Appointments = (props) => {
 
     axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
       .then((response) => {
-      console.log(response.data.id);
+      addAppointmentEncounter(response.data.id);
       setVisible(false)
     }).catch((e)=>{
       setVisible(false)
@@ -153,7 +153,7 @@ const Appointments = (props) => {
       ]
     }
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
+    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Encounter`, data)
       .then((response) => {
       console.log(response);
       setVisible(false)
