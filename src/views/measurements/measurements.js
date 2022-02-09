@@ -35,6 +35,8 @@ const Appointments = (props) => {
   const [requesting, setRequesting] = useState(false);
   const [visible, setVisible] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
+  const [deleteVisible, setDeleteVisible] = useState(false)
+  const [selectedId, setSelectedId] = useState(false)
 
   // new patient fields
   const [firstName, setFirstName] = useState("");
@@ -55,6 +57,11 @@ const Appointments = (props) => {
 
 
   useEffect(() => {
+    fetchMeasurements()
+  }, [])
+
+
+  const fetchMeasurements = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Observation&subject=Patient/${patient_id}`;
     setRequesting(true);
@@ -62,41 +69,48 @@ const Appointments = (props) => {
       var carePlans = [];
       response.data.entry?.forEach((item, index) => {
           console.log(item)
-        carePlans.push(item)
-        carePlans.push({
-            // name: item.resource?.name[0]?.given?.join(' '),
-            id: item.resource.id,
-            title: item.resource.title,
-            intent: item.resource.intent,
-            status: item.resource.status,
-        })
+          carePlans.push({
+              id: item.resource.id,
+              title: item.resource.code.text,
+              status: item.resource.status,
+          })
       })
       console.log(carePlans);
       // console.log(appointmentList)
       setRequesting(false);
       setCarePlansList(carePlans);
     })
-  }, [])
+  }
 
   const addPatient = () => {
+    const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
-      "resourceType": "Patient",
-      "active": status == 'on'? true:false,
-      "name": [
-        {
-          "use": "official",
-          "family": lastName,
-          "given": [
-            firstName, lastName
-          ]
+        "resourceType": "Observation",
+        "status": "registered",
+        "code": {
+            "coding": [
+                {
+                    "system": "http://loinc.org/",
+                    "code": "8867-4",
+                    "display": "Heart rate"
+                }
+            ],
+            "text": "Heart rate"
+        },
+        "subject": {
+            "reference": "Patient/"+patient_id
+        },
+        "valueQuantity": {
+            "value": 97,
+            "unit": "beats/minute",
+            "system": "http://unitsofmeasure.org/",
+            "code": "/min"
         }
-      ],
-      "gender": gender,
-      "birthDate": dob
     }
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=Patient', data).then((response) => {
-      console.log(response);
+    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Observation&subject=Patient/${patient_id}`, data)
+      .then((response) => {
+      fetchMeasurements()
       setVisible(false)
     }).catch((e)=>{
       setVisible(false)
@@ -159,6 +173,20 @@ const Appointments = (props) => {
 
   }
 
+  const deleteMeasurement = () => {
+    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Observation/'+selectedId;
+    setRequesting(true);
+    axios.delete(delete_patient_url).then((response) => {
+      setRequesting(false);
+      setDeleteVisible(false);
+      fetchMeasurements();
+    }).catch((err) => {
+      setRequesting(false);
+      setDeleteVisible(false);
+      fetchMeasurements();
+    })
+  }
+
   return (
     <CRow>
       <CCol xs={12}>
@@ -175,8 +203,9 @@ const Appointments = (props) => {
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
                     <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Title</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Intent</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Action</CTableHeaderCell>
+                    
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
@@ -187,10 +216,15 @@ const Appointments = (props) => {
                           <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
                           <CTableDataCell>{item.id}</CTableDataCell>
                           <CTableDataCell>{item.title}</CTableDataCell>
-                          <CTableDataCell>{item.intent}</CTableDataCell>
                           <CTableDataCell>{item.status}</CTableDataCell>
                           <CTableDataCell>
-                            <a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit</a>
+                            <CButton
+                                color="danger"
+                                variant="outline"
+                                onClick={() => {setDeleteVisible(true);console.log(item); setSelectedId(item.id)}}
+                              >
+                                Delete
+                              </CButton>
                           </CTableDataCell>
                         </CTableRow>
                       )
@@ -285,6 +319,27 @@ const Appointments = (props) => {
       </CModalFooter>
     </CModal>
 
+    <CModal visible={deleteVisible} onClose={() => setDeleteVisible(false)}>
+      <CModalHeader onClose={() => setDeleteVisible(false)}>
+        <CModalTitle>Confirmation</CModalTitle>
+      </CModalHeader>
+      <CModalBody>
+
+      <CCol xs={12}>
+        <CCard className="mb-4">
+          <CCardBody>
+              Are you sure you want to delete?
+          </CCardBody>
+        </CCard>
+      </CCol>
+      </CModalBody>
+      <CModalFooter>
+        <CButton color="secondary" onClick={() => setDeleteVisible(false)}>
+          Close
+        </CButton>
+        <CButton color="primary" onClick={() => deleteMeasurement()}>Confirm Delete</CButton>
+      </CModalFooter>
+    </CModal>
     </CRow>
   )
 }

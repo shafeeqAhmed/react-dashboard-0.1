@@ -92,7 +92,7 @@ const Tasks = (props) => {
         })
       })
       setRequesting(false);
-      setAppointmentsList(appointmentList);
+      setTasksList(appointmentList);
     })
   }
 
@@ -276,7 +276,7 @@ const Tasks = (props) => {
                 </CTableHead>
                 <CTableBody>
                   { requesting && <CSpinner/> }
-                    {appointmentsList?.map((item, index) => {
+                    {tasksList?.map((item, index) => {
                       return (
                         <CTableRow key={item.id}>
                           <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
