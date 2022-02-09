@@ -249,6 +249,7 @@ const Appointments = (props) => {
     axios.get(url).then((response) => {
       const data = response.data
 
+      console.log(data)
       setEditVisible(true)
       setRequesting(false)
       setEditStatus(data.status)
@@ -258,6 +259,7 @@ const Appointments = (props) => {
       setEditServiceTypeDisplay(data.serviceType[0].coding[0].display)
       setEditAppointmentTypeCode(data.appointmentType.coding[0].code)
       setEditAppointmentTypeDisplay(data.appointmentType.coding[0].display)
+      setEditComment(data.comment)
       // setEditVisible(true)
 
 
@@ -265,19 +267,14 @@ const Appointments = (props) => {
       setVisible(false)
       setRequesting(false)
     })
-
-
-    // setEditComment(item.comment)
-    // setEditStart(item.start)
-    // // setEditAppointmentTypeCode('123');
-    // setEditStatus(item.status)
-    // setSelectedId(item.id)
   }
 
   const editAppointment = () => {
+    const patient_id = new URLSearchParams(search).get('patient_id');
+
     const data = {
       "resourceType": "Appointment",
-      "id": "279260f5-aa63-4893-86ef-363a39b8f24d",
+      "id": selectedId,
       "meta": {
           "versionId": "1",
           "lastUpdated": "2022-02-09T13:39:39.374+00:00"
@@ -287,8 +284,8 @@ const Appointments = (props) => {
           {
               "coding": [
                   {
-                      "code": "Omnis ea itaque elit",
-                      "display": "Accusantium mollit a"
+                      "code": editServiceTypeCode,
+                      "display": editServiceTypeDisplay
                   }
               ]
           }
@@ -296,23 +293,23 @@ const Appointments = (props) => {
       "appointmentType": {
           "coding": [
               {
-                  "code": "Quam consectetur ac",
-                  "display": "Et nesciunt esse do"
+                  "code": editAppointmentTypeCode,
+                  "display": editAppointmentTypeDisplay
               }
           ]
       },
       "start": "2021-12-15T12:00:00+00:00",
       "end": "2021-12-15T12:30:00+00:00",
-      "comment": "Enim commodi aut non",
-      "participant": [
-          {
-              "actor": {
-                  "reference": "Patient/9e909e52-61a1-be50-1878-a12ef8c36346"
-              },
-              "status": "accepted"
-          }
+      "comment": editComment,
+      "participant":[
+        {
+          "actor":{
+            "reference":"Patient/"+patient_id
+          },
+          "status":"accepted"
+        },
       ]
-  }
+    }
 
     axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedId, data).then((response) => {
       console.log(response);
@@ -444,12 +441,13 @@ const Appointments = (props) => {
                 </CCol>
 
                 <CCol md={12}>
+                  { status }
                   <CFormLabel htmlFor="status">Status</CFormLabel>
                   <CFormSelect onChange={(e) => setStatus(e.target.value)} id="status">
                     <option>Choose...</option>
-                    <option value='booked'>Booked</option>
-                    <option value='confirmed'>Confirmed</option>
-                    <option value='completed'>Completed</option>
+                    <option value='booked' selected={editStatus === 'bookend'}>Booked</option>
+                    <option value='confirmed'  selected={editStatus === 'confirmed'}>Confirmed</option>
+                    <option value='completed'  selected={editStatus === 'completed'}>Completed</option>
 
                   </CFormSelect>
                 </CCol>
@@ -515,9 +513,9 @@ const Appointments = (props) => {
                   <CFormLabel htmlFor="status">Status</CFormLabel>
                   <CFormSelect value={editStatus} onChange={(e) => setEditStatus(e.target.value)} id="status">
                     <option>Choose...</option>
-                    <option value='Booked'>Booked</option>
-                    <option value='Confirmed'>Confirmed</option>
-                    <option value='Completed'>Completed</option>
+                    <option value='booked'>Booked</option>
+                    <option value='confirmed'>Confirmed</option>
+                    <option value='completed'>Completed</option>
 
                   </CFormSelect>
                 </CCol>
