@@ -146,6 +146,11 @@ const Appointments = (props) => {
       "resourceType":"Encounter",
       "subject":{"reference":"Patient/"+patient_id},
       "status":"planned",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "AMB",
+        "display": "ambulatory"
+      },
       "appointment":[
         {
           "reference":`Appointment/${appointmentId}`
