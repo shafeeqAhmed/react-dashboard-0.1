@@ -174,15 +174,66 @@ const Appointments = (props) => {
     })
   }
 
-  const updateEncountOnAppointment = (data, appointmentId) => {
-    console.log(data)
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL+`&resssource=Appointment/${appointmentId}`,
-      {"extension": [
+  // const updateEncountOnAppointment = (data, appointmentId) => {
+  //   console.log(data.data.id)
+  //   axios.put(process.env.REACT_APP_BASE_EDIT_URL+`&resource=Appointment/${appointmentId}`,
+  //     {"extension": [
+  //       {
+  //           "url": `http://fhir.medlix.org/StructureDefinition/${data.data.id}`
+  //       }
+  //     ]}
+  //   ).then((resp) => {
+  //       alert('syccecss')
+  //       console.log(resp)
+  //   }).catch((err) => {
+  //       alert(';err')
+  //       console.log(err)
+  //   })
+  // }
+
+  
+  const updateEncountOnAppointment = (enc, appointmentId) => {
+    const patient_id = new URLSearchParams(search).get('patient_id');
+    const data = {
+      "resourceType":"Appointment",
+      "status":'booked',
+      "serviceType":[
         {
-            "url": `http://fhir.medlix.org/StructureDefinition/${data.data.id}`,
-            "valueString": "CSA005"
+          "coding":[
+            {
+              "code":serviceTypeCode,
+              "display":serviceTypeDisplay
+            }
+          ]
         }
-      ]}
+      ],
+      "appointmentType":{
+        "coding":[
+          {
+            "code":appointmentTypeCode,
+            "display":appointmentTypeDisplay
+          }
+        ]
+      },
+      "extension": [
+        {
+            "url": `http://fhir.medlix.org/StructureDefinition/${enc.data.id}`
+        }
+      ],
+      "start": "2021-12-15T12:00:00+00:00",
+      "end": "2021-12-15T12:30:00+00:00",
+      "comment":comment,
+      "participant":[
+        {
+          "actor":{
+            "reference":"Patient/"+patient_id
+          },
+          "status":"accepted"
+        },
+      ]
+    }
+    axios.put(process.env.REACT_APP_BASE_EDIT_URL+`&resource=Appointment/${appointmentId}`,
+      data
     ).then((resp) => {
         alert('syccecss')
         console.log(resp)

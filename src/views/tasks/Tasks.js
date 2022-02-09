@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import axios from 'axios'
+import axios from '../../utils/axios'
 import {
   CCard,
   CCardBody,
@@ -257,8 +257,8 @@ const Tasks = (props) => {
       <CCol xs={12}>
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>Appointments</strong> <small>listing</small>
-            <CButton style={{float: 'right'}} onClick={() => setVisible(!visible)}>Add appointment</CButton>
+            <strong>Tasks</strong> <small>listing</small>
+            <CButton style={{float: 'right'}} onClick={() => setVisible(!visible)}>Add task</CButton>
 
           </CCardHeader>
           <CCardBody>
@@ -318,7 +318,7 @@ const Tasks = (props) => {
       </CCol>
     <CModal visible={visible} onClose={() => setVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
-        <CModalTitle>Add Appointment</CModalTitle>
+        <CModalTitle>Add Task</CModalTitle>
       </CModalHeader>
       <CModalBody>
 
@@ -386,7 +386,7 @@ const Tasks = (props) => {
 
     <CModal visible={editVisible} onClose={() => setEditVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
-        <CModalTitle>Edit Appointment</CModalTitle>
+        <CModalTitle>Edit Task</CModalTitle>
       </CModalHeader>
       <CModalBody>
 
