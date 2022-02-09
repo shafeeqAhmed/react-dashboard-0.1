@@ -195,13 +195,6 @@ const Appointments = (props) => {
       setVisible(false)
       setRequesting(false)
     })
-
-
-    // setEditComment(item.comment)
-    // setEditStart(item.start)
-    // // setEditAppointmentTypeCode('123');
-    // setEditStatus(item.status)
-    // setSelectedId(item.id)
   }
 
   const editAppointment = () => {
