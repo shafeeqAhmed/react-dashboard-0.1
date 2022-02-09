@@ -161,7 +161,7 @@ const Appointments = (props) => {
       ]
     }
 
-    
+
 
     axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Encounter`, data)
       .then((response) => {
@@ -191,7 +191,7 @@ const Appointments = (props) => {
   //   })
   // }
 
-  
+
   const updateEncountOnAppointment = (enc, appointmentId) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
@@ -238,7 +238,6 @@ const Appointments = (props) => {
         alert('syccecss')
         console.log(resp)
     }).catch((err) => {
-        alert(';err')
         console.log(err)
     })
   }
@@ -441,7 +440,6 @@ const Appointments = (props) => {
                 </CCol>
 
                 <CCol md={12}>
-                  { status }
                   <CFormLabel htmlFor="status">Status</CFormLabel>
                   <CFormSelect onChange={(e) => setStatus(e.target.value)} id="status">
                     <option>Choose...</option>

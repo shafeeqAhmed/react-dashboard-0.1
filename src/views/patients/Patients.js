@@ -274,7 +274,7 @@ const Patients = () => {
                     })}
                 </CTableBody>
               </CTable>
-            { getPaginationHtml(pagination) }
+            {/*{ getPaginationHtml(pagination) }*/}
           </CCardBody>
         </CCard>
       </CCol>

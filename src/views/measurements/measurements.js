@@ -201,11 +201,10 @@ const Appointments = (props) => {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Title</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Action</CTableHeaderCell>
-                    
+
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
@@ -214,7 +213,6 @@ const Appointments = (props) => {
                       return (
                         <CTableRow key={item.id}>
                           <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
-                          <CTableDataCell>{item.id}</CTableDataCell>
                           <CTableDataCell>{item.title}</CTableDataCell>
                           <CTableDataCell>{item.status}</CTableDataCell>
                           <CTableDataCell>
