@@ -55,6 +55,8 @@ const Patients = React.lazy(() => import('./views/patients/Patients'))
 const Appointments = React.lazy(() => import('./views/appointments/Appointments'))
 const CarePlans = React.lazy(() => import('./views/carePlan/carePlans'))
 const Measurements = React.lazy(() => import('./views/measurements/measurements'))
+const Tasks = React.lazy(() => import('./views/tasks/Tasks'))
+
 
 
 const routes = [
@@ -105,7 +107,9 @@ const routes = [
   { path: '/patients', name: 'Patients', component: Patients },
   { path: '/appointments', name: 'Appointments', component: Appointments },
   { path: '/CarePlans', name: 'Care Plans', component: CarePlans },
-  { path: '/measurements', name: 'Measurement', component: Measurements }
+  { path: '/measurements', name: 'Measurement', component: Measurements },
+  { path: '/tasks', name: 'Tasks', component: Tasks }
+
 ]
 
 export default routes
