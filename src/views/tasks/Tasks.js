@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import axios from '../../utils/axios'
+import axios from 'axios'
 import {
   CCard,
   CCardBody,
@@ -29,14 +29,14 @@ import {
 import { DocsCallout, DocsExample } from 'src/components'
 import { Link, useLocation } from 'react-router-dom'
 
-const Appointments = (props) => {
+const Tasks = (props) => {
 
-  const [appointmentsList, setAppointmentsList] = useState([]);
+  const [tasksList, setTasksList] = useState([]);
   const [requesting, setRequesting] = useState(false);
   const [visible, setVisible] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
   const [deleteVisible, setDeleteVisible] = useState(false)
-  const [selectedId, setSelectedId] = useState("");
+  const [selectedId, setSelectedId] = useState(false);
   const [patientId, setPatientId] = useState(false);
 
 
@@ -52,6 +52,8 @@ const Appointments = (props) => {
   const [end, setEnd] = useState("");
   const [description, setDescription] = useState("");
 
+
+  const [selectedPatientId, setSelectedPatientId] = useState(false);
   const search = useLocation().search;
 
 
@@ -95,6 +97,8 @@ const Appointments = (props) => {
   }
 
   const addAppointment = () => {
+    console.log(start)
+    console.log(end)
     const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
       "resourceType":"Appointment",
@@ -149,11 +153,6 @@ const Appointments = (props) => {
       "resourceType":"Encounter",
       "subject":{"reference":"Patient/"+patient_id},
       "status":"planned",
-      "class": {
-        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-        "code": "AMB",
-        "display": "ambulatory"
-      },
       "appointment":[
         {
           "reference":`Appointment/${appointmentId}`
@@ -161,69 +160,32 @@ const Appointments = (props) => {
       ]
     }
 
-    
-
     axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Encounter`, data)
       .then((response) => {
+      console.log(response);
+
+
     //   updating encounter to appointment extension
-        updateEncountOnAppointment(response, appointmentId)
-        setVisible(false)
+
+
+      setVisible(false)
     }).catch((e)=>{
       setVisible(false)
       console.log(e)
     })
   }
 
-  const updateEncountOnAppointment = (data, appointmentId) => {
-    console.log(data)
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL+`&resssource=Appointment/${appointmentId}`,
-      {"extension": [
-        {
-            "url": `http://fhir.medlix.org/StructureDefinition/${data.data.id}`,
-            "valueString": "CSA005"
-        }
-      ]}
-    ).then((resp) => {
-        alert('syccecss')
-        console.log(resp)
-    }).catch((err) => {
-        alert(';err')
-        console.log(err)
-    })
-  }
-
   const setAndEditModal = (item) => {
-    setRequesting(true)
-    const url = process.env.REACT_APP_BASE_GET_URL+'&resource=Appointment/'+item.id
-    axios.get(url).then((response) => {
-      const data = response.data
-
-      setEditVisible(true)
-      setRequesting(false)
-      setEditStatus(data.status)
-      setEditStart(data.start)
-      setEditEnd(data.end)
-      setEditServiceTypeCode(data.serviceType[0].coding[0].code)
-      setEditServiceTypeDisplay(data.serviceType[0].coding[0].display)
-      setEditAppointmentTypeCode(data.appointmentType.coding[0].code)
-      setEditAppointmentTypeDisplay(data.appointmentType.coding[0].display)
-      // setEditVisible(true)
-
-
-    }).catch((e)=>{
-      setVisible(false)
-      setRequesting(false)
-    })
-
-
-    // setEditComment(item.comment)
-    // setEditStart(item.start)
-    // // setEditAppointmentTypeCode('123');
-    // setEditStatus(item.status)
-    // setSelectedId(item.id)
+    console.log('item', item);
+    setEditComment(item.comment)
+    setEditStart(item.start)
+    // setEditAppointmentTypeCode('123');
+    setEditStatus(item.status)
+    setSelectedPatientId(item.id)
+    setEditVisible(true)
   }
 
-  const editAppointment = () => {
+  const editPatient = () => {
     const data = {
       "resourceType": "Appointment",
       "id": "279260f5-aa63-4893-86ef-363a39b8f24d",
@@ -263,7 +225,7 @@ const Appointments = (props) => {
       ]
   }
 
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedId, data).then((response) => {
+    axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedPatientId, data).then((response) => {
       console.log(response);
       setEditVisible(false)
     }).catch((e)=>{
@@ -272,7 +234,9 @@ const Appointments = (props) => {
     })
 
   }
-  const deleteAppointment = () => {let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Appointment/'+selectedId;
+
+  const deletePatient = () => {
+    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Appointment&actor=Patient/'+selectedPatientId;
     setRequesting(true);
     axios.delete(delete_patient_url).then((response) => {
       setRequesting(false);
@@ -284,6 +248,10 @@ const Appointments = (props) => {
       fetchAppointments();
     })
   }
+
+
+
+
   return (
     <CRow>
       <CCol xs={12}>
@@ -396,9 +364,9 @@ const Appointments = (props) => {
                   <CFormLabel htmlFor="status">Status</CFormLabel>
                   <CFormSelect onChange={(e) => setStatus(e.target.value)} id="status">
                     <option>Choose...</option>
-                    <option value='booked'>Booked</option>
-                    <option value='confirmed'>Confirmed</option>
-                    <option value='completed'>Completed</option>
+                    <option value='Booked'>Booked</option>
+                    <option value='Confirmed'>Confirmed</option>
+                    <option value='Completed'>Completed</option>
 
                   </CFormSelect>
                 </CCol>
@@ -480,7 +448,7 @@ const Appointments = (props) => {
         <CButton color="secondary" onClick={() => setEditVisible(false)}>
           Close
         </CButton>
-        <CButton color="primary" onClick={() => editAppointment()}>Save changes</CButton>
+        <CButton color="primary" onClick={() => editPatient()}>Save changes</CButton>
       </CModalFooter>
     </CModal>
 
@@ -503,7 +471,7 @@ const Appointments = (props) => {
         <CButton color="secondary" onClick={() => setDeleteVisible(false)}>
           Close
         </CButton>
-        <CButton color="primary" onClick={() => deleteAppointment()}>Confirm Delete</CButton>
+        <CButton color="primary" onClick={() => deletePatient()}>Confirm Delete</CButton>
       </CModalFooter>
     </CModal>
 
@@ -511,4 +479,4 @@ const Appointments = (props) => {
   )
 }
 
-export default Appointments
+export default Tasks
