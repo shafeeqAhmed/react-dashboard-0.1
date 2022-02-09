@@ -164,33 +164,6 @@ const Appointments = (props) => {
       setRequesting(false)
     })
 
-
-
-    console.log('item', item);
-     // var names = item.name.split(' ')
-    // let editObjectSchema = {
-    //   "resourceType": "Patient",
-    //   "active": item.isActive,
-    //   "name": [
-    //     {
-    //       "use": "official",
-    //       "family": names[names.length-1],
-    //       "given": names
-    //     }
-    //   ],
-    //   "gender": item.gender,
-    //   "birthDate": item.dob
-    // }
-
-    // setEditFirstName(names[0])
-    // setEditLastName(names[1] ?? "")
-    // setEditGender(item.gender)
-    // setEditDob(item.dob)
-    // setEditStatus(item.status)
-    //
-    // setSelectedId(item.id)
-    // setEditVisible(true)
-
   }
 
 
