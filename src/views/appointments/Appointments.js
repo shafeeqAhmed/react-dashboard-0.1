@@ -24,7 +24,7 @@ import {
   CForm,
   CFormLabel,
   CFormCheck,
-  CFormSelect
+  CFormSelect, CFormTextarea
 } from '@coreui/react'
 import { DocsCallout, DocsExample } from 'src/components'
 import { Link, useLocation } from 'react-router-dom'
@@ -36,14 +36,24 @@ const Appointments = (props) => {
   const [visible, setVisible] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
   const [deleteVisible, setDeleteVisible] = useState(false)
+  const [selectedId, setSelectedId] = useState(false);
 
-  // new patient fields
+  // new Appointment fields
+
+  const [status, setStatus] = useState(false);
+  const [serviceTypeCode, setServiceTypeCode] = useState();
+  const [serviceTypeDisplay, setServiceTypeDisplay] = useState();
+  const [appointmentTypeCode, setAppointmentTypeCode] = useState();
+  const [appointmentTypeDisplay, setAppointmentTypeDisplay] = useState();
+  const [comment, setComment] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
-  const [comment, setComment] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState(false);
-  
+
+
+
+
+
 
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
@@ -65,7 +75,6 @@ const Appointments = (props) => {
     axios.get(get_patients_url).then((response) => {
       var appointmentList = [];
       response.data.entry?.forEach((item, index) => {
-          console.log(item)
         appointmentList.push({
             // name: item.resource?.name[0]?.given?.join(' '),
             id: item.resource.id,
@@ -75,51 +84,77 @@ const Appointments = (props) => {
             status: item.resource.status,
         })
       })
-      console.log(response);
-      console.log(appointmentList)
       setRequesting(false);
       setAppointmentsList(appointmentList);
     })
   }, [])
 
-  const addPatient = () => {
-    // const data = {
-    //   "resourceType": "Patient",
-    //   "active": status == 'on'? true:false,
-    //   "name": [
-    //     {
-    //       "use": "official",
-    //       "family": lastName,
-    //       "given": [
-    //         firstName, lastName
-    //       ]
-    //     }
-    //   ],
-    //   "gender": gender,
-    //   "birthDate": dob
-    // }
-
-    const data1 = {
-      "resourceType": "Appointment",
-        "status": "booked",
-        
-        // "appointmentType": {
-        //     "coding": [
-        //         {
-        //             "system": "http://terminology.hl7.org/CodeSystem/v2-0276",
-        //             "code": "FOLLOWUP",
-        //             "display": "A follow up visit from a previous appointment"
-        //         }
-        //     ]
-        // },
-        "priority": 5,
-        "description": "Discussion on the results of your recent MRI",
-        "start": "2021-12-15T12:00:00+00:00",
-        "end": "2021-12-15T12:30:00+00:00",
-        "comment": "Further expand on the results of the MRI and determine the next actions that may be appropriate."    
+  const addAppointment = () => {
+    console.log(start)
+    console.log(end)
+    const patient_id = new URLSearchParams(search).get('patient_id');
+    const data = {
+      "resourceType":"Appointment",
+      "status":'booked',
+      "serviceType":[
+        {
+          "coding":[
+            {
+              "code":serviceTypeCode,
+              "display":serviceTypeDisplay
+            }
+          ]
+        }
+      ],
+      "appointmentType":{
+        "coding":[
+          {
+            "code":appointmentTypeCode,
+            "display":appointmentTypeDisplay
+          }
+        ]
+      },
+      // "start":start,
+      // "end":end,
+      "start": "2021-12-15T12:00:00+00:00",
+      "end": "2021-12-15T12:30:00+00:00",
+      "comment":comment,
+      "participant":[
+        {
+          "actor":{
+            "reference":"Patient/"+patient_id
+          },
+          "status":"accepted"
+        },
+      ]
     }
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}`, data1).then((response) => {
+
+
+    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
+      .then((response) => {
+      console.log(response.data.id);
+      setVisible(false)
+    }).catch((e)=>{
+      setVisible(false)
+      console.log(e)
+    })
+  }
+  const addAppointmentEncounter = (appointmentId) => {
+    const patient_id = new URLSearchParams(search).get('patient_id');
+    const data = {
+      "resourceType":"Encounter",
+      "subject":{"reference":"Patient/"+patient_id},
+      "status":"planned",
+      "appointment":[
+        {
+          "reference":`Appointment/${appointmentId}`
+        }
+      ]
+    }
+
+    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
+      .then((response) => {
       console.log(response);
       setVisible(false)
     }).catch((e)=>{
@@ -127,7 +162,7 @@ const Appointments = (props) => {
       console.log(e)
     })
   }
-  
+
   const setAndEditModal = (item) => {
     console.log('item', item);
      var names = item.name.split(' ')
@@ -167,23 +202,11 @@ const Appointments = (props) => {
       setEditVisible(false)
       console.log(e)
     })
-    
+
   }
 
 
-  const deletePatient = () => {
-    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Patient/'+selectedPatientId;
-    setRequesting(true);
-    axios.delete(delete_patient_url).then((response) => {
-      setRequesting(false);
-      setDeleteVisible(false);
-      // fetchPatients();
-    }).catch((err) => {
-      setRequesting(false);
-      setDeleteVisible(false);
-      // fetchPatients();
-    })
-  }
+
 
   return (
     <CRow>
@@ -199,7 +222,7 @@ const Appointments = (props) => {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">ID</CTableHeaderCell>
+                    {/*<CTableHeaderCell scope="col">ID</CTableHeaderCell>*/}
                     <CTableHeaderCell scope="col">Start</CTableHeaderCell>
                     <CTableHeaderCell scope="col">End</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
@@ -213,16 +236,33 @@ const Appointments = (props) => {
                       return (
                         <CTableRow key={item.id}>
                           <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
-                          <CTableDataCell>{item.id}</CTableDataCell>
+                          {/*<CTableDataCell>{item.id}</CTableDataCell>*/}
                           <CTableDataCell>{item.start}</CTableDataCell>
                           <CTableDataCell>{item.end}</CTableDataCell>
                           <CTableDataCell>{item.status}</CTableDataCell>
                           <CTableDataCell>
                             {item.comment}
                           </CTableDataCell>
+                          {/*<CTableDataCell>*/}
+                          {/*  <a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit Appointment</a>*/}
+                          {/*</CTableDataCell>*/}
                           <CTableDataCell>
-                            <a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit Appointment</a>
+                            <CButton
+                              color="success"
+                              variant="outline"
+                              className="m-2"
+                              onClick={() => setAndEditModal(item)}                            >
+                              Edit
+                            </CButton>
+                            <CButton
+                              color="danger"
+                              variant="outline"
+                              onClick={() => {setDeleteVisible(true); setSelectedId(item.id)}}
+                            >
+                              Delete
+                            </CButton>
                           </CTableDataCell>
+
 
                         </CTableRow>
                       )
@@ -243,31 +283,50 @@ const Appointments = (props) => {
           <CCardBody>
               <CForm className="row g-3">
                 <CCol md={6}>
-                  <CFormLabel htmlFor="inputEmail4">Start</CFormLabel>
-                  <CFormInput type='date' onChange={(e) => setStart(e.target.value)} id="inputEmail4" />
+                  <CFormLabel htmlFor="start">Start Date Time</CFormLabel>
+                  <CFormInput type='datetime-local' onChange={(e) => setStart(e.target.value)} id="start" />
                 </CCol>
                 <CCol md={6}>
-                  <CFormLabel htmlFor="inputPassword4">Last name</CFormLabel>
-                  <CFormInput type='date' onChange={(e) => setEnd(e.target.value)} id="inputPassword4" />
+                  <CFormLabel htmlFor="end">End Date Time</CFormLabel>
+                  <CFormInput type='datetime-local' onChange={(e) => setEnd(e.target.value)} id="end" />
                 </CCol>
-                <CCol xs={12}>
-                  <CFormLabel htmlFor="inputAddress">Date of birth</CFormLabel>
-                  <CFormInput type="text" onChange={(e) => setComment(e.target.value)} id="inputAddress" placeholder="" />
+                <CCol xs={6}>
+                  <CFormLabel htmlFor="serviceTypeCode">Service Type Code</CFormLabel>
+                  <CFormInput type="text" onChange={(e) => setServiceTypeCode(e.target.value)} id="serviceTypeCode" placeholder="Type Service Type Code" />
                 </CCol>
-                <CCol xs={12}>
-                  <CFormLabel htmlFor="inputAddress">Date of birth</CFormLabel>
-                  <CFormInput type="text" onChange={(e) => setDescription(e.target.value)} id="inputAddress" placeholder="1234 Main St" />
+                <CCol xs={6}>
+                  <CFormLabel htmlFor="serviceType">Service Type</CFormLabel>
+                  <CFormInput type="text" onChange={(e) => setServiceTypeDisplay(e.target.value)} id="serviceType" placeholder="Type Service Type" />
                 </CCol>
+
+
+                <CCol xs={6}>
+                  <CFormLabel htmlFor="appointmentTypeCode">Appointment Type Code</CFormLabel>
+                  <CFormInput type="text" onChange={(e) => setAppointmentTypeCode(e.target.value)} id="appointmentTypeCode" placeholder="Type Service Type Code" />
+                </CCol>
+
+
+                <CCol xs={6}>
+                  <CFormLabel htmlFor="appointmentType">Appointment Type </CFormLabel>
+                  <CFormInput type="text" onChange={(e) => setAppointmentTypeDisplay(e.target.value)} id="appointmentType" placeholder="Appointment Type" />
+                </CCol>
+
                 <CCol md={12}>
-                  <CFormLabel htmlFor="inputState">Status</CFormLabel>
-                  <CFormSelect onChange={(e) => setStatus(e.target.value)} id="inputState">
+                  <CFormLabel htmlFor="comment">Comment</CFormLabel>
+                  <CFormTextarea onChange={(e) => setComment(e.target.value)} id="comment"></CFormTextarea>
+                </CCol>
+
+                <CCol md={12}>
+                  <CFormLabel htmlFor="status">Status</CFormLabel>
+                  <CFormSelect onChange={(e) => setStatus(e.target.value)} id="status">
                     <option>Choose...</option>
                     <option value='Booked'>Booked</option>
                     <option value='Confirmed'>Confirmed</option>
                     <option value='Completed'>Completed</option>
-                    
+
                   </CFormSelect>
                 </CCol>
+
               </CForm>
           </CCardBody>
         </CCard>
@@ -277,7 +336,7 @@ const Appointments = (props) => {
         <CButton color="secondary" onClick={() => setVisible(false)}>
           Close
         </CButton>
-        <CButton color="primary" onClick={() => addPatient()}>Save changes</CButton>
+        <CButton color="primary" onClick={() => addAppointment()}>Save changes</CButton>
       </CModalFooter>
     </CModal>
 

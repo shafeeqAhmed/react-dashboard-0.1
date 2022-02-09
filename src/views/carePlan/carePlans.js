@@ -28,6 +28,7 @@ import {
 } from '@coreui/react'
 import { DocsCallout, DocsExample } from 'src/components'
 import { Link, useLocation } from 'react-router-dom'
+import data from "@coreui/coreui/js/src/dom/data";
 
 const Appointments = (props) => {
 
@@ -35,25 +36,27 @@ const Appointments = (props) => {
   const [requesting, setRequesting] = useState(false);
   const [visible, setVisible] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
+  const [deleteVisible, setDeleteVisible] = useState(false)
 
-  // new patient fields
+  // new carePlan fields
   const [title, setTitle] = useState("");
-  const [intent, setIntent] = useState("");
   const [cmsId, setCmsId ]= useState("");
-  const [status, setStatus] = useState(false);
 
-  const [editFirstName, setEditFirstName] = useState("");
-  const [editLastName, setEditLastName] = useState("");
-  const [editDob, setEditDob] = useState("");
-  const [editGender, setEditGender] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editCmsId, setEditCmsId] = useState("");
   const [editStatus, setEditStatus] = useState(false);
   const [editPatientObject, setEditPatientObject] = useState(false);
-  const [selectedPatientId, setSelectedPatientId] = useState(false);
+  const [selectedId, setSelectedId] = useState(false);
   const [editSchema, setEditSchema] = useState(false);
   const search = useLocation().search;
 
 
   useEffect(() => {
+    fetchRecord()
+  }, [])
+
+  const fetchRecord = () => {
+
     const patient_id = new URLSearchParams(search).get('patient_id');
     let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=CarePlan&subject=Patient/${patient_id}`;
     setRequesting(true);
@@ -61,11 +64,11 @@ const Appointments = (props) => {
       var carePlans = [];
       response.data.entry?.forEach((item, index) => {
         carePlans.push({
-            // name: item.resource?.name[0]?.given?.join(' '),
-            id: item.resource.id,
-            title: item.resource.title,
-            intent: item.resource.intent,
-            status: item.resource.status,
+          // name: item.resource?.name[0]?.given?.join(' '),
+          id: item.resource.id,
+          title: item.resource.title,
+          intent: item.resource.intent,
+          status: item.resource.status,
         })
       })
       console.log(carePlans);
@@ -73,8 +76,7 @@ const Appointments = (props) => {
       setRequesting(false);
       setCarePlansList(carePlans);
     })
-  }, [])
-
+  }
   const addCarePlan = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
 
@@ -95,17 +97,77 @@ const Appointments = (props) => {
       },
     }
     axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=CarePlan', data).then((response) => {
-      console.log(response);
+      fetchRecord();
       setVisible(false)
     }).catch((e)=>{
       setVisible(false)
-      console.log(e)
+      fetchRecord()
+    })
+  }
+  const editCarePlan = () => {
+    const patient_id = new URLSearchParams(search).get('patient_id');
+
+    const data = {
+      "resourceType": "CarePlan",
+      "identifier":[
+        {
+          "system":"medlix",
+          "value":editCmsId,
+        }
+      ],
+
+      "status": 'active',
+      "intent": 'order',
+      "title": editTitle,
+      "subject":{
+        "reference":"Patient/"+patient_id
+      },
+    }
+    const url = process.env.REACT_APP_BASE_EDIT_URL+'&resource=CarePlan/'+selectedId
+    axios.put(url, data).then((response) => {
+      fetchRecord();
+      setEditVisible(false)
+    }).catch((e)=>{
+      alert('there is something going wrong please try again')
+      setEditVisible(false)
+      fetchRecord()
+    })
+  }
+  const deleteCarePlan = () => {
+    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=CarePlan/'+selectedId;
+    setRequesting(true);
+    axios.delete(delete_patient_url).then((response) => {
+      setRequesting(false);
+      setDeleteVisible(false);
+      fetchRecord();
+    }).catch((err) => {
+      setRequesting(false);
+      setDeleteVisible(false);
+      fetchRecord();
     })
   }
 
   const setAndEditModal = (item) => {
+    setRequesting(true)
+    const url = process.env.REACT_APP_BASE_GET_URL+'&resource=CarePlan/'+item.id
+    axios.get(url).then((response) => {
+      const data = response.data
+      setSelectedId(item.id)
+      setEditTitle(data.title)
+      setEditStatus(data.status)
+      setEditCmsId(data.identifier[0].value)
+
+      setEditVisible(true)
+      setRequesting(false)
+    }).catch((e)=>{
+      setVisible(false)
+      setRequesting(false)
+    })
+
+
+
     console.log('item', item);
-     var names = item.name.split(' ')
+     // var names = item.name.split(' ')
     // let editObjectSchema = {
     //   "resourceType": "Patient",
     //   "active": item.isActive,
@@ -120,43 +182,17 @@ const Appointments = (props) => {
     //   "birthDate": item.dob
     // }
 
-    setEditFirstName(names[0])
-    setEditLastName(names[1] ?? "")
-    setEditGender(item.gender)
-    setEditDob(item.dob)
-    setEditStatus(item.status)
-
-    setSelectedPatientId(item.id)
-    setEditVisible(true)
-
-  }
-
-  const editPatient = () => {
-    const data = {
-      "resourceType": "Patient",
-      "active": editStatus == 'on'? true:false,
-      "name": [
-        {
-          "use": "official",
-          "family": editLastName,
-          "given": [
-            editFirstName, editLastName
-          ]
-        }
-      ],
-      "gender": editGender,
-      "birthDate": editDob
-    }
-
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedPatientId, data).then((response) => {
-      console.log(response);
-      setEditVisible(false)
-    }).catch((e)=>{
-      setEditVisible(false)
-      console.log(e)
-    })
+    // setEditFirstName(names[0])
+    // setEditLastName(names[1] ?? "")
+    // setEditGender(item.gender)
+    // setEditDob(item.dob)
+    // setEditStatus(item.status)
+    //
+    // setSelectedId(item.id)
+    // setEditVisible(true)
 
   }
+
 
   return (
     <CRow>
@@ -172,7 +208,6 @@ const Appointments = (props) => {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Title</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Intent</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
@@ -185,13 +220,26 @@ const Appointments = (props) => {
                       return (
                         <CTableRow key={item.id}>
                           <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
-                          <CTableDataCell>{item.id}</CTableDataCell>
                           <CTableDataCell>{item.title}</CTableDataCell>
                           <CTableDataCell>{item.intent}</CTableDataCell>
                           <CTableDataCell>{item.status}</CTableDataCell>
                           <CTableDataCell>
-                            <a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit</a>
+                            <CButton
+                              color="success"
+                              variant="outline"
+                              className="m-2"
+                              onClick={() => setAndEditModal(item)}                            >
+                              Edit
+                            </CButton>
+                            <CButton
+                              color="danger"
+                              variant="outline"
+                              onClick={() => {setDeleteVisible(true); setSelectedId(item.id)}}
+                            >
+                              Delete
+                            </CButton>
                           </CTableDataCell>
+
                         </CTableRow>
                       )
                     })}
@@ -222,14 +270,14 @@ const Appointments = (props) => {
                   <CFormLabel htmlFor="cmsid">CMS ID</CFormLabel>
                   <CFormInput onChange={(e) => setCmsId(e.target.value)} type="text" id="cmsid" />
                 </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputState">Status</CFormLabel>
-                  <CFormSelect onChange={(e) => setStatus(e.target.value)} id="inputState">
-                    <option>Choose...</option>
-                    <option value='true'>Active</option>
-                    <option value='false'>InActive</option>
-                  </CFormSelect>
-                </CCol>
+                {/*<CCol md={6}>*/}
+                {/*  <CFormLabel htmlFor="inputState">Status</CFormLabel>*/}
+                {/*  <CFormSelect onChange={(e) => setStatus(e.target.value)} id="inputState">*/}
+                {/*    <option>Choose...</option>*/}
+                {/*    <option value='true'>Active</option>*/}
+                {/*    <option value='false'>InActive</option>*/}
+                {/*  </CFormSelect>*/}
+                {/*</CCol>*/}
               </CForm>
           </CCardBody>
         </CCard>
@@ -252,31 +300,16 @@ const Appointments = (props) => {
       <CCol xs={12}>
         <CCard className="mb-4">
           <CCardBody>
-              <CForm className="row g-3">
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputEmail4">First name</CFormLabel>
-                  <CFormInput value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} type="text" id="inputEmail4" />
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputPassword4">Last name</CFormLabel>
-                  <CFormInput value={editLastName} onChange={(e) => setEditLastName(e.target.value)} type="text" id="inputPassword4" />
-                </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="inputAddress">Date of birth</CFormLabel>
-                  <CFormInput value={editDob} type="date" onChange={(e) => setEditDob(e.target.value)} id="inputAddress" />
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputState">Gender</CFormLabel>
-                  <CFormSelect onChange={(e) => setEditGender(e.target.value)} id="inputState">
-                    <option>Choose...</option>
-                    <option selected={editGender == 'male' ? 'selected' : ''} value='male'>Male</option>
-                    <option selected={editGender == 'female' ? 'selected' : ''} value='female'>Female</option>
-                  </CFormSelect>
-                </CCol>
-                <CCol xs={12}>
-                  <CFormCheck checked={editStatus ? 'checked' : ''} type="checkbox" onChange={(e) => setEditStatus(e.target.value)} id="gridCheck" label="Active" />
-                </CCol>
-              </CForm>
+            <CForm className="row g-3">
+              <CCol md={6}>
+                <CFormLabel htmlFor="title">Title</CFormLabel>
+                <CFormInput value={editTitle} onChange={(e) => setEditTitle(e.target.value)} type="text" id="title" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="cmsid">CMS ID</CFormLabel>
+                <CFormInput value={editCmsId} onChange={(e) => setEditCmsId(e.target.value)} type="text" id="title" />
+              </CCol>
+            </CForm>
           </CCardBody>
         </CCard>
       </CCol>
@@ -285,9 +318,32 @@ const Appointments = (props) => {
         <CButton color="secondary" onClick={() => setEditVisible(false)}>
           Close
         </CButton>
-        <CButton color="primary" onClick={() => editPatient()}>Save changes</CButton>
+        <CButton color="primary" onClick={() => editCarePlan()}>Save changes</CButton>
       </CModalFooter>
     </CModal>
+
+
+      <CModal visible={deleteVisible} onClose={() => setDeleteVisible(false)}>
+        <CModalHeader onClose={() => setDeleteVisible(false)}>
+          <CModalTitle>Confirmation</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+
+          <CCol xs={12}>
+            <CCard className="mb-4">
+              <CCardBody>
+                Are you sure you want to delete?
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setDeleteVisible(false)}>
+            Close
+          </CButton>
+          <CButton color="primary" onClick={() => deleteCarePlan()}>Confirm Delete</CButton>
+        </CModalFooter>
+      </CModal>
 
     </CRow>
   )

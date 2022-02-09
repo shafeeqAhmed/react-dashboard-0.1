@@ -28,7 +28,7 @@ import {
   CDropdown,
   CDropdownToggle,
   CDropdownMenu,
-  CDropdownItem
+  CDropdownItem, CPaginationItem, CPagination
 } from '@coreui/react'
 import { DocsCallout, DocsExample } from 'src/components'
 import { Link, useHistory} from 'react-router-dom'
@@ -42,8 +42,9 @@ const Patients = () => {
   const [visible, setVisible] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
   const [deleteVisible, setDeleteVisible] = useState(false)
+  const [pagination, setPagination] = useState(false)
 
-  
+
 
   // new patient fields
   const [firstName, setFirstName] = useState("");
@@ -67,11 +68,17 @@ const Patients = () => {
     fetchPatients();
   }, [])
 
-  const fetchPatients = () => {
-    let get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient';
+  const fetchPatients = (url = '') => {
+    var get_patients_url = ''
+    if(url === '') {
+       get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient';
+    } else {
+       get_patients_url = url
+    }
     setRequesting(true);
     axios.get(get_patients_url).then((response) => {
       var patientsList = [];
+      setPagination(response.data.link)
       response.data.entry.forEach((item, index) => {
         patientsList.push({
             name: item.resource?.name[0]?.given?.join(' '),
@@ -81,9 +88,10 @@ const Patients = () => {
             id: item.resource?.id
         })
       })
-      console.log(patientsList)
       setRequesting(false);
       setPatients(patientsList);
+    }).catch((e)=>{
+      setRequesting(false)
     })
   }
 
@@ -105,12 +113,29 @@ const Patients = () => {
     }
 
     axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=Patient', data).then((response) => {
-      console.log(response);
       setVisible(false)
+      fetchPatients()
     }).catch((e)=>{
       setVisible(false)
-      console.log(e)
     })
+  }
+  const getPaginationHtml = (pagination) => {
+    if(pagination) {
+      return (
+        <CPagination className="justify-content-end" aria-label="Page navigation example">
+          <CPaginationItem disabled>Previous</CPaginationItem>
+          {/**/}
+          {pagination?.map((item, index) => {
+            return (
+              // eslint-disable-next-line react/jsx-key
+              <CPaginationItem  active={item.relation == 'self'} onClick={() => fetchPatients(item.url)}>{++index}</CPaginationItem>
+            )
+          })}
+          <CPaginationItem>Next</CPaginationItem>
+        </CPagination>
+      )
+    }
+
   }
 
   const setAndEditModal = (item) => {
@@ -249,6 +274,7 @@ const Patients = () => {
                     })}
                 </CTableBody>
               </CTable>
+            { getPaginationHtml(pagination) }
           </CCardBody>
         </CCard>
       </CCol>
@@ -345,7 +371,6 @@ const Patients = () => {
     </CModal>
 
 
-
     <CModal visible={deleteVisible} onClose={() => setDeleteVisible(false)}>
       <CModalHeader onClose={() => setDeleteVisible(false)}>
         <CModalTitle>Confirmation</CModalTitle>
@@ -367,8 +392,6 @@ const Patients = () => {
         <CButton color="primary" onClick={() => deletePatient()}>Confirm Delete</CButton>
       </CModalFooter>
     </CModal>
-
-
     </CRow>
   )
 }
