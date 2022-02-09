@@ -27,7 +27,7 @@ import {
   CFormSelect, CFormTextarea
 } from '@coreui/react'
 import { DocsCallout, DocsExample } from 'src/components'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useHistory, useLocation } from 'react-router-dom'
 
 const Appointments = (props) => {
 
@@ -67,7 +67,7 @@ const Appointments = (props) => {
   const [editEnd, setEditEnd] = useState("");
   const [editDescription, setEditDescription] = useState("");
 
-
+  const history = useHistory()
   useEffect(() => {
     fetchAppointments();
   }, [])
@@ -332,6 +332,10 @@ const Appointments = (props) => {
       fetchAppointments();
     })
   }
+
+  const navigateTasks = (item) => {
+    history.push(`tasks?encounter_id=${item.id}`)
+  }
   return (
     <CRow>
       <CCol xs={12}>
@@ -371,6 +375,13 @@ const Appointments = (props) => {
                           {/*  <a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit Appointment</a>*/}
                           {/*</CTableDataCell>*/}
                           <CTableDataCell>
+                            <CButton
+                              color="info"
+                              variant="outline"
+                              className="m-2"
+                              onClick={() => navigateTasks(item)}                            >
+                              Tasks
+                            </CButton>
                             <CButton
                               color="success"
                               variant="outline"
