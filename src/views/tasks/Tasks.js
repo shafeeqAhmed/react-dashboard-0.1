@@ -219,6 +219,7 @@ const Tasks = (props) => {
 
   const setAndEditModal = (item) => {
     // setRequesting(true)
+
     setSelectedId(item.id)
     setEditStatus(item.status)
     setEditPriority(item.priority)
@@ -279,8 +280,7 @@ const Tasks = (props) => {
   }
 
   const deleteTask = () => {
-    alert(selectedId)
-    let delete_task_url = process.env.REACT_APP_BASE_DELETE_URL + `&resource=Task/${selectedId}`;
+    let delete_task_url = process.env.REACT_APP_BASE_DELETE_URL+`&resource=Task/${selectedId}`;
     setRequesting(true);
     axios.delete(delete_task_url).then((response) => {
       setRequesting(false);
@@ -292,7 +292,6 @@ const Tasks = (props) => {
       fetchAppointments();
     })
   }
-
 
   return (
     <CRow>
