@@ -26,8 +26,8 @@ import {
   CFormCheck,
   CFormSelect, CFormTextarea
 } from '@coreui/react'
-import { DocsCallout, DocsExample } from 'src/components'
-import { Link, useLocation } from 'react-router-dom'
+import {DocsCallout, DocsExample} from 'src/components'
+import {Link, useLocation} from 'react-router-dom'
 
 const Tasks = (props) => {
 
@@ -43,31 +43,22 @@ const Tasks = (props) => {
   // new Appointment fields
 
   const [status, setStatus] = useState(false);
-  const [serviceTypeCode, setServiceTypeCode] = useState();
-  const [serviceTypeDisplay, setServiceTypeDisplay] = useState();
-  const [appointmentTypeCode, setAppointmentTypeCode] = useState();
-  const [appointmentTypeDisplay, setAppointmentTypeDisplay] = useState();
-  const [comment, setComment] = useState("");
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
+  const [priority, setPriority] = useState();
+  const [code, setCode] = useState();
   const [description, setDescription] = useState("");
+  const [cmsId, setCmsId] = useState("");
 
 
   const [selectedPatientId, setSelectedPatientId] = useState(false);
   const search = useLocation().search;
 
 
-
-
   const [editStatus, setEditStatus] = useState(false);
-  const [editServiceTypeCode, setEditServiceTypeCode] = useState();
-  const [editServiceTypeDisplay, setEditServiceTypeDisplay] = useState();
-  const [editAppointmentTypeCode, setEditAppointmentTypeCode] = useState();
-  const [editAppointmentTypeDisplay, setEditAppointmentTypeDisplay] = useState();
-  const [editComment, setEditComment] = useState("");
-  const [editStart, setEditStart] = useState("");
-  const [editEnd, setEditEnd] = useState("");
+  const [editPriority, setEditPriority] = useState();
+  const [editCode, setEditCode] = useState();
   const [editDescription, setEditDescription] = useState("");
+  const [editCmsId, setEditCmsId] = useState("");
+  const [editPeriod, setEditPeriod] = useState("");
 
 
   useEffect(() => {
@@ -76,113 +67,165 @@ const Tasks = (props) => {
 
   const fetchAppointments = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
+    const encounter_id = new URLSearchParams(search).get('encounter_id');
     setPatientId(patient_id)
-    let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Appointment&actor=Patient/${patient_id}&_sort=appointment-sort-start`;
+
+    let get_tasks_url = process.env.REACT_APP_BASE_GET_URL + `&resource=Task&encounter=${encounter_id}`;
     setRequesting(true);
-    axios.get(get_patients_url).then((response) => {
+    axios.get(get_tasks_url).then((response) => {
       var appointmentList = [];
       response.data.entry?.forEach((item, index) => {
-        appointmentList.push({
-            // name: item.resource?.name[0]?.given?.join(' '),
-            id: item.resource.id,
-            start: item.resource.start,
-            end: item.resource.end,
-            comment: item.resource.comment,
-            status: item.resource.status,
+        tasksList.push({
+          id: item.resource.id,
+          period: item.resource.executionPeriod.start,
+          order: item.resource.intent,
+          priority: item.resource.priority,
+          status: item.resource.status,
+          description: item.resource.description,
+          // code: item.resource.code.config[0].code,
+          // cmsid: item.resource.extension[0]
         })
       })
       setRequesting(false);
-      setTasksList(appointmentList);
-    })
+      setTasksList(tasksList);
+    }).catch((error => {
+
+    }))
   }
 
-  const addAppointment = () => {
-    console.log(start)
-    console.log(end)
+  const addTask = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
+    const encounterId = new URLSearchParams(search).get('encounter_id');
     const data = {
-      "resourceType":"Appointment",
-      "status":'booked',
-      "serviceType":[
+      "resourceType": "Task",
+      // "id": "e180f26c-2b98-48cf-a35a-b1cfcadb000b",
+      "extension": [
         {
-          "coding":[
-            {
-              "code":serviceTypeCode,
-              "display":serviceTypeDisplay
-            }
-          ]
-        }
+          "url": "http://fhir.medlix.org/StructureDefinition/task-cms-id",
+          "valueString": cmsId
+        },
+        // {
+        //   "url": "http://fhir.medlix.org/StructureDefinition/time-since-last-execution",
+        //   "valueString": "2022-05-11T16:00:00.0000000+00:00"
+        // }
       ],
-      "appointmentType":{
-        "coding":[
+      // "groupIdentifier": {
+      //   "value": "de589d09-f57a-43bb-696c-5568282559b1"
+      // },
+      // "status": "accepted",
+      "status": status,
+      "statusReason": {
+        "text": "Created"
+      },
+      "intent": "order",
+      // "priority": "routine",
+      "priority": priority,
+      "code": {
+        "coding": [
           {
-            "code":appointmentTypeCode,
-            "display":appointmentTypeDisplay
+            // "code": "tasks.measurement"
+            "code": code
           }
         ]
       },
-      // "start":start,
-      // "end":end,
-      "start": "2021-12-15T12:00:00+00:00",
-      "end": "2021-12-15T12:30:00+00:00",
-      "comment":comment,
-      "participant":[
-        {
-          "actor":{
-            "reference":"Patient/"+patient_id
-          },
-          "status":"accepted"
-        },
-      ]
+      "description": description,
+      "encounter": {
+        "reference": `Encounter/${encounterId}`
+      },
+      "executionPeriod": {
+        "start": "2022-01-28T16:00:00.6831150Z"
+      },
+      "authoredOn": "2022-01-25T14:54:10.6831150Z",
+      "lastModified": "2022-01-25T14:54:10.6831150Z",
+      "owner": {
+        "reference": `Patient/${patient_id}`
+      }
+
     }
 
 
-
-    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
+    axios.post(process.env.REACT_APP_BASE_POST_URL + `&resource=Task&encounter=${encounterId}`, data)
       .then((response) => {
-      addAppointmentEncounter(response.data.id);
+        fetchAppointments()
+        setVisible(false)
+      }).catch((e) => {
       setVisible(false)
-    }).catch((e)=>{
-      setVisible(false)
-      console.log(e)
     })
   }
-  const addAppointmentEncounter = (appointmentId) => {
+  const editTask = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
+    const encounterId = new URLSearchParams(search).get('encounter_id');
+
     const data = {
-      "resourceType":"Encounter",
-      "subject":{"reference":"Patient/"+patient_id},
-      "status":"planned",
-      "appointment":[
+      "resourceType": "Task",
+      "id": selectedId,
+      "extension": [
         {
-          "reference":`Appointment/${appointmentId}`
-        }
-      ]
+          "url": "http://fhir.medlix.org/StructureDefinition/task-cms-id",
+          // "valueString": editCmsId
+          "valueString": '1'
+        },
+        // {
+        //   "url": "http://fhir.medlix.org/StructureDefinition/time-since-last-execution",
+        //   "valueString": "2022-05-11T16:00:00.0000000+00:00"
+        // }
+      ],
+      // "groupIdentifier": {
+      //   "value": "de589d09-f57a-43bb-696c-5568282559b1"
+      // },
+      // "status": "accepted",
+      "status": editStatus,
+      "statusReason": {
+        "text": "Created"
+      },
+      "intent": "order",
+      "priority": "routine",
+      // "priority": editPriority,
+      "code": {
+        "coding": [
+          {
+            "code": "tasks.measurement"
+            // "code": code
+          }
+        ]
+      },
+      // "description": description,
+      "description": 'description',
+      "encounter": {
+        "reference": `Encounter/${encounterId}`
+      },
+      "executionPeriod": {
+        "start": "2022-01-28T16:00:00.6831150Z"
+      },
+      "authoredOn": "2022-01-25T14:54:10.6831150Z",
+      "lastModified": "2022-01-25T14:54:10.6831150Z",
+      "owner": {
+        "reference": `Patient/${patient_id}`
+      }
+
     }
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Encounter`, data)
+    axios.put(process.env.REACT_APP_BASE_EDIT_URL + `&resource=Task`, data)
+
+    // axios.put(process.env.REACT_APP_BASE_EDIT_URL + '&resource=Task/' + selectedPatientId, data)
       .then((response) => {
       console.log(response);
-
-
-    //   updating encounter to appointment extension
-
-
-      setVisible(false)
-    }).catch((e)=>{
-      setVisible(false)
+      setEditVisible(false)
+    }).catch((e) => {
+      setEditVisible(false)
       console.log(e)
     })
   }
 
   const setAndEditModal = (item) => {
-    console.log('item', item);
-    setEditComment(item.comment)
-    setEditStart(item.start)
-    // setEditAppointmentTypeCode('123');
+    // setRequesting(true)
+    setSelectedId(item.id)
     setEditStatus(item.status)
-    setSelectedPatientId(item.id)
+    setEditPriority(item.priority)
+    setEditPeriod(item.period)
+    setEditDescription(item.description)
     setEditVisible(true)
+
   }
 
   const editPatient = () => {
@@ -190,55 +233,56 @@ const Tasks = (props) => {
       "resourceType": "Appointment",
       "id": "279260f5-aa63-4893-86ef-363a39b8f24d",
       "meta": {
-          "versionId": "1",
-          "lastUpdated": "2022-02-09T13:39:39.374+00:00"
+        "versionId": "1",
+        "lastUpdated": "2022-02-09T13:39:39.374+00:00"
       },
       "status": "booked",
       "serviceType": [
-          {
-              "coding": [
-                  {
-                      "code": "Omnis ea itaque elit",
-                      "display": "Accusantium mollit a"
-                  }
-              ]
-          }
+        {
+          "coding": [
+            {
+              "code": "Omnis ea itaque elit",
+              "display": "Accusantium mollit a"
+            }
+          ]
+        }
       ],
       "appointmentType": {
-          "coding": [
-              {
-                  "code": "Quam consectetur ac",
-                  "display": "Et nesciunt esse do"
-              }
-          ]
+        "coding": [
+          {
+            "code": "Quam consectetur ac",
+            "display": "Et nesciunt esse do"
+          }
+        ]
       },
       "start": "2021-12-15T12:00:00+00:00",
       "end": "2021-12-15T12:30:00+00:00",
       "comment": "Enim commodi aut non",
       "participant": [
-          {
-              "actor": {
-                  "reference": "Patient/9e909e52-61a1-be50-1878-a12ef8c36346"
-              },
-              "status": "accepted"
-          }
+        {
+          "actor": {
+            "reference": "Patient/9e909e52-61a1-be50-1878-a12ef8c36346"
+          },
+          "status": "accepted"
+        }
       ]
-  }
+    }
 
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedPatientId, data).then((response) => {
+    axios.put(process.env.REACT_APP_BASE_EDIT_URL + '&resource=Patient/' + selectedPatientId, data).then((response) => {
       console.log(response);
       setEditVisible(false)
-    }).catch((e)=>{
+    }).catch((e) => {
       setEditVisible(false)
       console.log(e)
     })
 
   }
 
-  const deletePatient = () => {
-    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Appointment&actor=Patient/'+selectedPatientId;
+  const deleteTask = () => {
+    alert(selectedId)
+    let delete_task_url = process.env.REACT_APP_BASE_DELETE_URL + `&resource=Task/${selectedId}`;
     setRequesting(true);
-    axios.delete(delete_patient_url).then((response) => {
+    axios.delete(delete_task_url).then((response) => {
       setRequesting(false);
       setDeleteVisible(false);
       fetchAppointments();
@@ -248,8 +292,6 @@ const Tasks = (props) => {
       fetchAppointments();
     })
   }
-
-
 
 
   return (
@@ -262,218 +304,197 @@ const Tasks = (props) => {
 
           </CCardHeader>
           <CCardBody>
-              <CTable>
-                <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                    {/*<CTableHeaderCell scope="col">ID</CTableHeaderCell>*/}
-                    <CTableHeaderCell scope="col">Start</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">End</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Status</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Comment</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
-                  { requesting && <CSpinner/> }
-                    {tasksList?.map((item, index) => {
-                      return (
-                        <CTableRow key={item.id}>
-                          <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
-                          {/*<CTableDataCell>{item.id}</CTableDataCell>*/}
-                          <CTableDataCell>{item.start}</CTableDataCell>
-                          <CTableDataCell>{item.end}</CTableDataCell>
-                          <CTableDataCell>{item.status}</CTableDataCell>
-                          <CTableDataCell>
-                            {item.comment}
-                          </CTableDataCell>
-                          {/*<CTableDataCell>*/}
-                          {/*  <a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit Appointment</a>*/}
-                          {/*</CTableDataCell>*/}
-                          <CTableDataCell>
-                            <CButton
-                              color="success"
-                              variant="outline"
-                              className="m-2"
-                              onClick={() => setAndEditModal(item)}                            >
-                              Edit
-                            </CButton>
-                            <CButton
-                              color="danger"
-                              variant="outline"
-                              onClick={() => {setDeleteVisible(true); setSelectedId(item.id)}}
-                            >
-                              Delete
-                            </CButton>
-                          </CTableDataCell>
+            <CTable>
+              <CTableHead>
+                <CTableRow>
+                  <CTableHeaderCell scope="col">#</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Period</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Priority</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Description</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Status</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
+
+                </CTableRow>
+              </CTableHead>
+              <CTableBody>
+                {requesting && <CSpinner/>}
+                {tasksList?.map((item, index) => {
+                  return (
+                    <CTableRow key={item.id}>
+                      <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                      <CTableDataCell>{item.period}</CTableDataCell>
+                      <CTableDataCell>{item.priority}</CTableDataCell>
+                      <CTableDataCell>{item.description}</CTableDataCell>
+                      <CTableDataCell>{item.status}</CTableDataCell>
+
+                      <CTableDataCell>
+                        <CButton
+                          color="success"
+                          variant="outline"
+                          className="m-2"
+                          onClick={() => setAndEditModal(item)}>
+                          Edit
+                        </CButton>
+                        <CButton
+                          color="danger"
+                          variant="outline"
+                          onClick={() => {
+                            setDeleteVisible(true);
+                            setSelectedId(item.id)
+                          }}
+                        >
+                          Delete
+                        </CButton>
+                      </CTableDataCell>
 
 
-                        </CTableRow>
-                      )
-                    })}
-                </CTableBody>
-              </CTable>
+                    </CTableRow>
+                  )
+                })}
+              </CTableBody>
+            </CTable>
           </CCardBody>
         </CCard>
       </CCol>
-    <CModal visible={visible} onClose={() => setVisible(false)}>
-      <CModalHeader onClose={() => setVisible(false)}>
-        <CModalTitle>Add Task</CModalTitle>
-      </CModalHeader>
-      <CModalBody>
+      <CModal visible={visible} onClose={() => setVisible(false)}>
+        <CModalHeader onClose={() => setVisible(false)}>
+          <CModalTitle>Add Task</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
 
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardBody>
-              <CForm className="row g-3">
-                <CCol md={6}>
-                  <CFormLabel htmlFor="start">Start Date Time</CFormLabel>
-                  <CFormInput type='datetime-local' onChange={(e) => setStart(e.target.value)} id="start" />
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="end">End Date Time</CFormLabel>
-                  <CFormInput type='datetime-local' onChange={(e) => setEnd(e.target.value)} id="end" />
-                </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="serviceTypeCode">Service Type Code</CFormLabel>
-                  <CFormInput type="text" onChange={(e) => setServiceTypeCode(e.target.value)} id="serviceTypeCode" placeholder="Type Service Type Code" />
-                </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="serviceType">Service Type</CFormLabel>
-                  <CFormInput type="text" onChange={(e) => setServiceTypeDisplay(e.target.value)} id="serviceType" placeholder="Type Service Type" />
-                </CCol>
+          <CCol xs={12}>
+            <CCard className="mb-4">
+              <CCardBody>
+                <CForm className="row g-3">
+                  <CCol xs={12}>
+                    <CFormLabel htmlFor="cmsid">CMS ID </CFormLabel>
+                    <CFormInput type="text" onChange={(e) => setCmsId(e.target.value)}
+                                id="cmsid" placeholder="CMS id"/>
+                  </CCol>
+                  <CCol md={12}>
+                    <CFormLabel htmlFor="priority">Priority</CFormLabel>
+                    <CFormSelect onChange={(e) => setPriority(e.target.value)} id="priority">
+                      <option>Choose...</option>
+                      <option value='routine'>Routine</option>
+                    </CFormSelect>
+                  </CCol>
 
+                  <CCol md={12}>
+                    <CFormLabel htmlFor="code">Code</CFormLabel>
+                    <CFormSelect onChange={(e) => setCode(e.target.value)} id="code">
+                      <option>Choose...</option>
+                      <option value='tasks.simple-task'>Simple Task</option>
+                      <option value='tasks.measurement'>Measurement</option>
+                      <option value='tasks.questionnaire'>Questionnaire</option>
+                    </CFormSelect>
+                  </CCol>
 
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="appointmentTypeCode">Appointment Type Code</CFormLabel>
-                  <CFormInput type="text" onChange={(e) => setAppointmentTypeCode(e.target.value)} id="appointmentTypeCode" placeholder="Type Service Type Code" />
-                </CCol>
+                  <CCol md={12}>
+                    <CFormLabel htmlFor="description">Description</CFormLabel>
+                    <CFormTextarea onChange={(e) => setDescription(e.target.value)} id="description"></CFormTextarea>
+                  </CCol>
+                  <CCol md={12}>
+                    <CFormLabel htmlFor="status">Status</CFormLabel>
+                    <CFormSelect onChange={(e) => setStatus(e.target.value)} id="status">
+                      <option>Choose...</option>
+                      <option value='accepted'>Accepted</option>
+                    </CFormSelect>
+                  </CCol>
 
+                </CForm>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setVisible(false)}>
+            Close
+          </CButton>
+          <CButton color="primary" onClick={() => addTask()}>Save changes</CButton>
+        </CModalFooter>
+      </CModal>
 
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="appointmentType">Appointment Type </CFormLabel>
-                  <CFormInput type="text" onChange={(e) => setAppointmentTypeDisplay(e.target.value)} id="appointmentType" placeholder="Appointment Type" />
-                </CCol>
+      <CModal visible={editVisible} onClose={() => setEditVisible(false)}>
+        <CModalHeader onClose={() => setVisible(false)}>
+          <CModalTitle>Edit Task</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
 
-                <CCol md={12}>
-                  <CFormLabel htmlFor="comment">Comment</CFormLabel>
-                  <CFormTextarea onChange={(e) => setComment(e.target.value)} id="comment"></CFormTextarea>
-                </CCol>
+          <CCol xs={12}>
+            <CCard className="mb-4">
+              <CCardBody>
+                <CForm className="row g-3">
+                  <CCol xs={12}>
+                    <CFormLabel htmlFor="cmsid">CMS ID </CFormLabel>
+                    <CFormInput type="text" onChange={(e) => setEditCmsId(e.target.value)}
+                                value={editCmsId}
+                                id="cmsid" placeholder="CMS id"/>
+                  </CCol>
+                  <CCol md={12}>
+                    <CFormLabel htmlFor="priority">Priority</CFormLabel>
+                    <CFormSelect onChange={(e) => setEditPriority(e.target.value)} id="priority">
+                      <option>Choose...</option>
+                      <option selected={true} value='routine'>Routine</option>
+                    </CFormSelect>
+                  </CCol>
 
-                <CCol md={12}>
-                  <CFormLabel htmlFor="status">Status</CFormLabel>
-                  <CFormSelect onChange={(e) => setStatus(e.target.value)} id="status">
-                    <option>Choose...</option>
-                    <option value='Booked'>Booked</option>
-                    <option value='Confirmed'>Confirmed</option>
-                    <option value='Completed'>Completed</option>
+                  <CCol md={12}>
+                    <CFormLabel htmlFor="code">Code</CFormLabel>
+                    <CFormSelect onChange={(e) => setEditCode(e.target.value)} id="code">
+                      <option>Choose...</option>
+                      <option value='tasks.simple-task'>Simple Task</option>
+                      <option selected={true} value='tasks.measurement'>Measurement</option>
+                      <option value='tasks.questionnaire'>Questionnaire</option>
+                    </CFormSelect>
+                  </CCol>
 
-                  </CFormSelect>
-                </CCol>
+                  <CCol md={12}>
+                    <CFormLabel htmlFor="description">Description</CFormLabel>
+                    <CFormTextarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} id="description"></CFormTextarea>
+                  </CCol>
+                  <CCol md={12}>
+                    <CFormLabel htmlFor="status">Status</CFormLabel>
+                    <CFormSelect onChange={(e) => setEditStatus(e.target.value)} id="status">
+                      <option>Choose...</option>
+                      <option selected={true} value='accepted'>Accepted</option>
+                    </CFormSelect>
+                  </CCol>
 
-              </CForm>
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CModalBody>
-      <CModalFooter>
-        <CButton color="secondary" onClick={() => setVisible(false)}>
-          Close
-        </CButton>
-        <CButton color="primary" onClick={() => addAppointment()}>Save changes</CButton>
-      </CModalFooter>
-    </CModal>
-
-    <CModal visible={editVisible} onClose={() => setEditVisible(false)}>
-      <CModalHeader onClose={() => setVisible(false)}>
-        <CModalTitle>Edit Task</CModalTitle>
-      </CModalHeader>
-      <CModalBody>
-
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardBody>
-          <CForm className="row g-3">
-                <CCol md={6}>
-                  <CFormLabel htmlFor="start">Start Date Time</CFormLabel>
-                  <CFormInput value={editStart} type='datetime-local' onChange={(e) => setEditStart(e.target.value)} id="start" />
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="end">End Date Time</CFormLabel>
-                  <CFormInput value={editEnd} type='datetime-local' onChange={(e) => setEditEnd(e.target.value)} id="end" />
-                </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="serviceTypeCode">Service Type Code</CFormLabel>
-                  <CFormInput value={editServiceTypeCode} type="text" onChange={(e) => setEditServiceTypeCode(e.target.value)} id="serviceTypeCode" placeholder="Type Service Type Code" />
-                </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="serviceType">Service Type</CFormLabel>
-                  <CFormInput value={editServiceTypeDisplay} type="text" onChange={(e) => setEditServiceTypeDisplay(e.target.value)} id="serviceType" placeholder="Type Service Type" />
-                </CCol>
-
-
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="appointmentTypeCode">Appointment Type Code</CFormLabel>
-                  <CFormInput value={editAppointmentTypeCode} type="text" onChange={(e) => setEditAppointmentTypeCode(e.target.value)} id="appointmentTypeCode" placeholder="Type Service Type Code" />
-                </CCol>
-
-
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="appointmentType">Appointment Type </CFormLabel>
-                  <CFormInput value={editAppointmentTypeDisplay} type="text" onChange={(e) => setEditAppointmentTypeDisplay(e.target.value)} id="appointmentType" placeholder="Appointment Type" />
-                </CCol>
-
-                <CCol md={12}>
-                  <CFormLabel htmlFor="comment">Comment</CFormLabel>
-                  <CFormTextarea value={editComment} onChange={(e) => setEditComment(e.target.value)} id="comment"></CFormTextarea>
-                </CCol>
-
-                <CCol md={12}>
-                  <CFormLabel htmlFor="status">Status</CFormLabel>
-                  <CFormSelect value={editStatus} onChange={(e) => setEditStatus(e.target.value)} id="status">
-                    <option>Choose...</option>
-                    <option value='Booked'>Booked</option>
-                    <option value='Confirmed'>Confirmed</option>
-                    <option value='Completed'>Completed</option>
-
-                  </CFormSelect>
-                </CCol>
-
-              </CForm>
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CModalBody>
-      <CModalFooter>
-        <CButton color="secondary" onClick={() => setEditVisible(false)}>
-          Close
-        </CButton>
-        <CButton color="primary" onClick={() => editPatient()}>Save changes</CButton>
-      </CModalFooter>
-    </CModal>
+                </CForm>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setEditVisible(false)}>
+            Close
+          </CButton>
+          <CButton color="primary" onClick={() => editTask()}>Save changes</CButton>
+        </CModalFooter>
+      </CModal>
 
 
-    <CModal visible={deleteVisible} onClose={() => setDeleteVisible(false)}>
-      <CModalHeader onClose={() => setDeleteVisible(false)}>
-        <CModalTitle>Confirmation</CModalTitle>
-      </CModalHeader>
-      <CModalBody>
+      <CModal visible={deleteVisible} onClose={() => setDeleteVisible(false)}>
+        <CModalHeader onClose={() => setDeleteVisible(false)}>
+          <CModalTitle>Confirmation</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
 
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardBody>
-              Are you sure you want to delete?
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CModalBody>
-      <CModalFooter>
-        <CButton color="secondary" onClick={() => setDeleteVisible(false)}>
-          Close
-        </CButton>
-        <CButton color="primary" onClick={() => deletePatient()}>Confirm Delete</CButton>
-      </CModalFooter>
-    </CModal>
+          <CCol xs={12}>
+            <CCard className="mb-4">
+              <CCardBody>
+                Are you sure you want to delete?
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setDeleteVisible(false)}>
+            Close
+          </CButton>
+          <CButton color="primary" onClick={() => deleteTask()}>Confirm Delete</CButton>
+        </CModalFooter>
+      </CModal>
 
     </CRow>
   )
