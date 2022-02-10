@@ -93,7 +93,6 @@ const Appointments = (props) => {
       setAppointmentsList(appointmentList);
     })
   }
-
   const addAppointment = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
@@ -117,10 +116,10 @@ const Appointments = (props) => {
           }
         ]
       },
-      // "start":start,
-      // "end":end,
-      "start": "2021-12-15T12:00:00+00:00",
-      "end": "2021-12-15T12:30:00+00:00",
+      "start":start+":00+00:00",
+      "end":end+":00+00:00",
+      // "start": "2021-12-15T12:00:00+00:00",
+      // "end": "2021-12-15T12:30:00+00:00",
       "comment":comment,
       "participant":[
         {
@@ -136,6 +135,7 @@ const Appointments = (props) => {
 
     axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
       .then((response) => {
+        fetchAppointments()
       addAppointmentEncounter(response.data.id);
       setVisible(false)
     }).catch((e)=>{
@@ -173,30 +173,12 @@ const Appointments = (props) => {
       console.log(e)
     })
   }
-
-  // const updateEncountOnAppointment = (data, appointmentId) => {
-  //   console.log(data.data.id)
-  //   axios.put(process.env.REACT_APP_BASE_EDIT_URL+`&resource=Appointment/${appointmentId}`,
-  //     {"extension": [
-  //       {
-  //           "url": `http://fhir.medlix.org/StructureDefinition/${data.data.id}`
-  //       }
-  //     ]}
-  //   ).then((resp) => {
-  //       alert('syccecss')
-  //       console.log(resp)
-  //   }).catch((err) => {
-  //       alert(';err')
-  //       console.log(err)
-  //   })
-  // }
-
-
   const updateEncountOnAppointment = (enc, appointmentId) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
       "resourceType":"Appointment",
       "status":'booked',
+      "id": appointmentId,
       "serviceType":[
         {
           "coding":[
@@ -220,8 +202,6 @@ const Appointments = (props) => {
             "url": `http://fhir.medlix.org/StructureDefinition/${enc.data.id}`
         }
       ],
-      "start": "2021-12-15T12:00:00+00:00",
-      "end": "2021-12-15T12:30:00+00:00",
       "comment":comment,
       "participant":[
         {
@@ -235,7 +215,6 @@ const Appointments = (props) => {
     axios.put(process.env.REACT_APP_BASE_EDIT_URL+`&resource=Appointment/${appointmentId}`,
       data
     ).then((resp) => {
-        alert('syccecss')
         console.log(resp)
     }).catch((err) => {
         console.log(err)
@@ -244,16 +223,16 @@ const Appointments = (props) => {
 
   const setAndEditModal = (item) => {
     setRequesting(true)
+    setSelectedId(item.id)
     const url = process.env.REACT_APP_BASE_GET_URL+'&resource=Appointment/'+item.id
     axios.get(url).then((response) => {
       const data = response.data
 
-      console.log(data)
       setEditVisible(true)
       setRequesting(false)
       setEditStatus(data.status)
-      setEditStart(data.start)
-      setEditEnd(data.end)
+      setEditStart(data.start.replace(":00+00:00", ""))
+      setEditEnd(data.end.replace(":00+00:00", ""))
       setEditServiceTypeCode(data.serviceType[0].coding[0].code)
       setEditServiceTypeDisplay(data.serviceType[0].coding[0].display)
       setEditAppointmentTypeCode(data.appointmentType.coding[0].code)
@@ -274,10 +253,10 @@ const Appointments = (props) => {
     const data = {
       "resourceType": "Appointment",
       "id": selectedId,
-      "meta": {
-          "versionId": "1",
-          "lastUpdated": "2022-02-09T13:39:39.374+00:00"
-      },
+      // "meta": {
+      //     "versionId": "1",
+      //     "lastUpdated": "2022-02-09T13:39:39.374+00:00"
+      // },
       "status": "booked",
       "serviceType": [
           {
@@ -297,8 +276,8 @@ const Appointments = (props) => {
               }
           ]
       },
-      "start": "2021-12-15T12:00:00+00:00",
-      "end": "2021-12-15T12:30:00+00:00",
+      "start":editStart+":00+00:00",
+      "end":editEnd+":00+00:00",
       "comment": editComment,
       "participant":[
         {
@@ -310,12 +289,11 @@ const Appointments = (props) => {
       ]
     }
 
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedId, data).then((response) => {
-      console.log(response);
+    axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Appointment/'+selectedId, data).then((response) => {
+      fetchAppointments()
       setEditVisible(false)
     }).catch((e)=>{
       setEditVisible(false)
-      console.log(e)
     })
 
   }

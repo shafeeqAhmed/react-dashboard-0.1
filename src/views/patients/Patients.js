@@ -155,6 +155,7 @@ const Patients = () => {
 
   const editPatient = () => {
     const data = {
+      "id": selectedPatientId,
       "resourceType": "Patient",
       "active": editStatus == 'on'? true:false,
       "name": [
