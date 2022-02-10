@@ -5,10 +5,6 @@ import {
   CCardBody,
   CCardHeader,
   CCol,
-  CDropdown,
-  CDropdownItem,
-  CDropdownMenu,
-  CDropdownToggle,
   CPagination,
   CPaginationItem,
   CRow,
@@ -21,28 +17,31 @@ import {
   CTableHeaderCell,
   CTableRow,
 } from '@coreui/react'
-import { Link } from 'react-router-dom'
+import { withRouter } from 'react-router-dom'
 
-const Patients = () => {
-  const baseUrl = process.env.REACT_APP_BASE_GET + '&resource=Patient'
+const Measurements = (props) => {
+  const baseUrl = process.env.REACT_APP_BASE_GET + '&resource=Observation'
+  const baseGetUrl =
+    // eslint-disable-next-line react/prop-types
+    baseUrl + '&subject=Patient/' + props.match.params.patientId
   const [searching, setSearching] = React.useState(true)
   const [errorMsg, setErrorMsg] = React.useState(null)
-  const [patients, setPatients] = React.useState([])
+  const [measurements, setMeasurements] = React.useState([])
   const [urlPagination, setUrlPagination] = React.useState(null)
   const [isFirstPage, setIsFirstPage] = React.useState(true)
 
-  const getPatientsFromFetch = async (url = null) => {
+  const getMeasurementsFromPatient = async (url = null) => {
     try {
-      setErrorMsg(null)
       setSearching(true)
-      const request = await fetch(url ? url : baseUrl)
+      setErrorMsg(null)
+      const request = await fetch(url ? url : baseGetUrl)
       const response = await request.json()
       if (response && response.entry) {
-        setPatients(response.entry)
+        setMeasurements(response.entry)
         setSearching(false)
         checkPagination(response)
       } else {
-        setErrorMsg('No patients found. Please try again.')
+        setErrorMsg('No Measurements found. Please try again.')
       }
     } catch (err) {
       setErrorMsg('Error: ' + err)
@@ -82,17 +81,17 @@ const Patients = () => {
   const handleNextPagination = () => {
     if (urlPagination) {
       setIsFirstPage(false)
-      getPatientsFromFetch(urlPagination)
+      getMeasurementsFromPatient(urlPagination)
     }
   }
 
   const handleFirstPagination = () => {
     setIsFirstPage(true)
-    getPatientsFromFetch()
+    getMeasurementsFromPatient()
   }
 
   useEffect(() => {
-    getPatientsFromFetch()
+    getMeasurementsFromPatient()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -101,15 +100,15 @@ const Patients = () => {
       <CCol xs={12}>
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>List of patients</strong> <small>{patients.length} results</small>
+            <strong>List of Measurements</strong> <small>{measurements.length} results</small>
           </CCardHeader>
           <CCardBody>
             {searching && <CSpinner color="secondary" />}
             {errorMsg && <CAlert color="danger">{errorMsg}</CAlert>}
             {!searching && !errorMsg && (
-              <CTable>
+              <CTable responsive>
                 <CTableCaption>
-                  <span className="float-start">List of patients</span>
+                  <span className="float-start">List of Measurements</span>
                   <CPagination align="end">
                     {!isFirstPage && (
                       <CPaginationItem itemType="prev" onClick={handleFirstPagination}>
@@ -126,43 +125,32 @@ const Patients = () => {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">ID</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Name</CTableHeaderCell>
-                    <CTableHeaderCell align="center" scope="col">
-                      Gender
-                    </CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Birth Date</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Quick Access</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Type</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Status</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Code</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Quantity</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
-                  {patients.map(({ resource: patient }, index) => (
-                    <CTableRow key={index}>
-                      <CTableDataCell>{patient.id}</CTableDataCell>
-                      <CTableDataCell>
-                        {patient.name[0].given[0] + ' ' + patient.name[0].family}
-                      </CTableDataCell>
-                      <CTableDataCell align="middle">{patient.gender}</CTableDataCell>
-                      <CTableDataCell>{patient.birthDate}</CTableDataCell>
-                      <CTableDataCell>
-                        <CDropdown variant="btn-group">
-                          <CDropdownToggle color="primary">View Links</CDropdownToggle>
-                          <CDropdownMenu>
-                            <CDropdownItem>
-                              <Link to={'/patients/' + patient.id + '/appointments'}>
-                                Appointments
-                              </Link>
-                            </CDropdownItem>
-                            <CDropdownItem>
-                              <Link to={'/patients/' + patient.id + '/measurements'}>
-                                Measurements
-                              </Link>
-                            </CDropdownItem>
-                            <CDropdownItem href="#">Care plans</CDropdownItem>
-                          </CDropdownMenu>
-                        </CDropdown>
-                      </CTableDataCell>
-                    </CTableRow>
-                  ))}
+                  {measurements.map(({ resource: measurement }, index) => {
+                    return (
+                      <CTableRow key={index}>
+                        <CTableDataCell>{measurement.id}</CTableDataCell>
+                        <CTableDataCell>{measurement.resourceType}</CTableDataCell>
+                        <CTableDataCell>{measurement.status}</CTableDataCell>
+                        <CTableDataCell>
+                          {measurement.code &&
+                          measurement.code.coding &&
+                          measurement.code.coding.length
+                            ? measurement?.code.coding[0]?.code
+                            : null}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          {measurement.valueQuantity ? measurement.valueQuantity.value : null}
+                        </CTableDataCell>
+                      </CTableRow>
+                    )
+                  })}
                 </CTableBody>
               </CTable>
             )}
@@ -173,4 +161,4 @@ const Patients = () => {
   )
 }
 
-export default Patients
+export default withRouter(Measurements)

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 import routes from '../routes'
 
@@ -9,9 +9,11 @@ const AppBreadcrumb = () => {
   const currentLocation = useLocation().pathname
 
   const getRouteName = (pathname, routes) => {
-    const currentRoute = routes.find((route) => route.path === pathname)
-    console.log(pathname)
-    console.log(currentRoute)
+    const currentRoute = routes.find((route) =>
+      route.path.includes(':')
+        ? route.path.includes(pathname.split('/')[0])
+        : route.path === pathname,
+    )
     return currentRoute.name
   }
 
@@ -22,10 +24,13 @@ const AppBreadcrumb = () => {
       breadcrumbs.push({
         pathname: currentPathname,
         name: getRouteName(currentPathname, routes),
-        active: index + 1 === array.length ? true : false,
+        active: true,
       })
       return currentPathname
     })
+    if (breadcrumbs.length > 2) {
+      breadcrumbs.splice(breadcrumbs.length - 2, 1)
+    }
     return breadcrumbs
   }
 
@@ -35,12 +40,15 @@ const AppBreadcrumb = () => {
     <CBreadcrumb className="m-0 ms-2">
       <CBreadcrumbItem href="/">Home</CBreadcrumbItem>
       {breadcrumbs.map((breadcrumb, index) => {
+        const totalBreadcrumbs = breadcrumbs.length
+        const isLastBreadcrumb = index === totalBreadcrumbs - 1
         return (
-          <CBreadcrumbItem
-            {...(breadcrumb.active ? { active: true } : { href: breadcrumb.pathname })}
-            key={index}
-          >
-            {breadcrumb.name}
+          <CBreadcrumbItem key={index}>
+            {breadcrumb.active && !isLastBreadcrumb ? (
+              <Link to={breadcrumb.pathname}>{breadcrumb.name}</Link>
+            ) : (
+              <>{breadcrumb.name}</>
+            )}
           </CBreadcrumbItem>
         )
       })}

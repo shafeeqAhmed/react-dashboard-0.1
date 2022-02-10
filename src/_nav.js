@@ -1,18 +1,7 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilBell,
-  cilCalculator,
-  cilChartPie,
-  cilCursor,
-  cilDrop,
-  cilNotes,
-  cilPencil,
-  cilPuzzle,
-  cilSpeedometer,
-  cilStar,
-} from '@coreui/icons'
-import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import { cilSmile } from '@coreui/icons'
+import { CNavItem, CNavTitle } from '@coreui/react'
 
 const _nav = [
   // {
@@ -25,24 +14,16 @@ const _nav = [
   //     text: 'NEW',
   //   },
   // },
-  // {
-  //   component: CNavTitle,
-  //   name: 'General',
-  // },
-  // {
-  //   component: CNavItem,
-  //   name: 'Colors',
-  //   to: '/theme/colors',
-  //   icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
-  // },
+  {
+    component: CNavTitle,
+    name: 'Patients',
+  },
   {
     component: CNavItem,
-    name: 'Patients',
+    name: 'List of patients',
     to: '/patients',
-    icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilSmile} customClassName="nav-icon" />,
   },
-
-
   // {
   //   component: CNavItem,
   //   name: 'Typography',
