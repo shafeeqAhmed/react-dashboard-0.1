@@ -44,15 +44,11 @@ const Tasks = (props) => {
 
   // new Appointment fields
 
-  const [status, setStatus] = useState(false);
-  const [serviceTypeCode, setServiceTypeCode] = useState();
-  const [serviceTypeDisplay, setServiceTypeDisplay] = useState();
-  const [appointmentTypeCode, setAppointmentTypeCode] = useState();
-  const [appointmentTypeDisplay, setAppointmentTypeDisplay] = useState();
-  const [comment, setComment] = useState("");
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
-  const [description, setDescription] = useState("");
+  const [order, setOrder] = useState(false);
+  const [period, setPeriod] = useState();
+  const [priority, setPriority] = useState();
+  const [description, setDescription] = useState();
+  const [status, setStatus] = useState();
 
 
   const [selectedPatientId, setSelectedPatientId] = useState(false);
@@ -61,15 +57,11 @@ const Tasks = (props) => {
 
 
 
-  const [editStatus, setEditStatus] = useState(false);
-  const [editServiceTypeCode, setEditServiceTypeCode] = useState();
-  const [editServiceTypeDisplay, setEditServiceTypeDisplay] = useState();
-  const [editAppointmentTypeCode, setEditAppointmentTypeCode] = useState();
-  const [editAppointmentTypeDisplay, setEditAppointmentTypeDisplay] = useState();
-  const [editComment, setEditComment] = useState("");
-  const [editStart, setEditStart] = useState("");
-  const [editEnd, setEditEnd] = useState("");
-  const [editDescription, setEditDescription] = useState("");
+  const [editOrder, setEditOrder] = useState(false);
+  const [editPeriod, setEditPeriod] = useState();
+  const [editPriority, setEditPriority] = useState();
+  const [editDescription, setEditDescription] = useState();
+  const [editStatus, setEditStatus] = useState();
 
 
   useEffect(() => {
@@ -163,41 +155,14 @@ const Tasks = (props) => {
       console.log(e)
     })
   }
-  const addAppointmentEncounter = (appointmentId) => {
-    const patient_id = new URLSearchParams(search).get('patient_id');
-    const data = {
-      "resourceType":"Encounter",
-      "subject":{"reference":"Patient/"+patient_id},
-      "status":"planned",
-      "appointment":[
-        {
-          "reference":`Appointment/${appointmentId}`
-        }
-      ]
-    }
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Encounter`, data)
-      .then((response) => {
-      console.log(response);
-
-
-    //   updating encounter to appointment extension
-
-
-      setVisible(false)
-    }).catch((e)=>{
-      setVisible(false)
-      console.log(e)
-    })
-  }
 
   const setAndEditModal = (item) => {
-    console.log('item', item);
-    setEditComment(item.comment)
-    setEditStart(item.start)
-    // setEditAppointmentTypeCode('123');
-    setEditStatus(item.status)
-    setSelectedPatientId(item.id)
+    setOrder(item.order)
+    setPeriod(item.period)
+    setPriority(item.priority)
+    setDescription(item.description)
+    setStatus(item.status)
     setEditVisible(true)
   }
 
@@ -282,7 +247,6 @@ const Tasks = (props) => {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                    {/*<CTableHeaderCell scope="col">ID</CTableHeaderCell>*/}
                     <CTableHeaderCell scope="col">Id</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Order</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Period</CTableHeaderCell>
@@ -299,12 +263,11 @@ const Tasks = (props) => {
                       return (
                         <CTableRow key={item.id}>
                           <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
-                          {/*<CTableDataCell>{item.id}</CTableDataCell>*/}
+                          <CTableDataCell>{item.id}</CTableDataCell>
                           <CTableDataCell>{item.order}</CTableDataCell>
                           <CTableDataCell>{item.period}</CTableDataCell>
-                          <CTableDataCell>{item.priority}</CTableDataCell>
                           <CTableDataCell>
-                            {item.description}
+                            {item.priority}
                           </CTableDataCell>
                           <CTableDataCell>{item.description}</CTableDataCell>
                           <CTableDataCell>{item.status}</CTableDataCell>
@@ -325,8 +288,6 @@ const Tasks = (props) => {
                               Delete
                             </CButton>
                           </CTableDataCell>
-
-
                         </CTableRow>
                       )
                     })}
@@ -346,25 +307,25 @@ const Tasks = (props) => {
           <CCardBody>
               <CForm className="row g-3">
                 <CCol md={6}>
-                  <CFormLabel htmlFor="start">Start Date Time</CFormLabel>
-                  <CFormInput type='datetime-local' onChange={(e) => setStart(e.target.value)} id="start" />
+                  <CFormLabel htmlFor="start">Order</CFormLabel>
+                  <CFormInput type='text' onChange={(e) => setStart(e.target.value)} id="start" placeholder="Order"  />
                 </CCol>
                 <CCol md={6}>
-                  <CFormLabel htmlFor="end">End Date Time</CFormLabel>
-                  <CFormInput type='datetime-local' onChange={(e) => setEnd(e.target.value)} id="end" />
+                  <CFormLabel htmlFor="end">Period</CFormLabel>
+                  <CFormInput type='text' onChange={(e) => setEnd(e.target.value)} id="end"  placeholder="Period" />
                 </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="serviceTypeCode">Service Type Code</CFormLabel>
-                  <CFormInput type="text" onChange={(e) => setServiceTypeCode(e.target.value)} id="serviceTypeCode" placeholder="Type Service Type Code" />
+                <CCol xs={12}>
+                  <CFormLabel htmlFor="serviceTypeCode">Priority</CFormLabel>
+                  <CFormInput type="text" onChange={(e) => setServiceTypeCode(e.target.value)} id="serviceTypeCode" placeholder="Priority" />
                 </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="serviceType">Service Type</CFormLabel>
-                  <CFormInput type="text" onChange={(e) => setServiceTypeDisplay(e.target.value)} id="serviceType" placeholder="Type Service Type" />
+                <CCol xs={12}>
+                  <CFormLabel htmlFor="serviceType">Description</CFormLabel>
+                  <CFormTextarea type="textarea" onChange={(e) => setServiceTypeDisplay(e.target.value)} id="serviceType" placeholder="Description" />
                 </CCol>
 
 
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="appointmentTypeCode">Appointment Type Code</CFormLabel>
+                {/* <CCol xs={6}>
+                  <CFormLabel htmlFor="appointmentTypeCode">Status</CFormLabel>
                   <CFormInput type="text" onChange={(e) => setAppointmentTypeCode(e.target.value)} id="appointmentTypeCode" placeholder="Type Service Type Code" />
                 </CCol>
 
@@ -377,7 +338,7 @@ const Tasks = (props) => {
                 <CCol md={12}>
                   <CFormLabel htmlFor="comment">Comment</CFormLabel>
                   <CFormTextarea onChange={(e) => setComment(e.target.value)} id="comment"></CFormTextarea>
-                </CCol>
+                </CCol> */}
 
                 <CCol md={12}>
                   <CFormLabel htmlFor="status">Status</CFormLabel>
@@ -414,42 +375,42 @@ const Tasks = (props) => {
           <CCardBody>
           <CForm className="row g-3">
                 <CCol md={6}>
-                  <CFormLabel htmlFor="start">Start Date Time</CFormLabel>
-                  <CFormInput value={editStart} type='datetime-local' onChange={(e) => setEditStart(e.target.value)} id="start" />
+                  <CFormLabel htmlFor="start">Order</CFormLabel>
+                  <CFormInput value={editOrder} type='text' onChange={(e) => setOrder(e.target.value)} id="start" placeholder="Order"  />
                 </CCol>
                 <CCol md={6}>
-                  <CFormLabel htmlFor="end">End Date Time</CFormLabel>
-                  <CFormInput value={editEnd} type='datetime-local' onChange={(e) => setEditEnd(e.target.value)} id="end" />
+                  <CFormLabel htmlFor="end">Period</CFormLabel>
+                  <CFormInput value={editPeriod} type='text' onChange={(e) => setPeriod(e.target.value)} id="end"  placeholder="Period" />
                 </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="serviceTypeCode">Service Type Code</CFormLabel>
-                  <CFormInput value={editServiceTypeCode} type="text" onChange={(e) => setEditServiceTypeCode(e.target.value)} id="serviceTypeCode" placeholder="Type Service Type Code" />
+                <CCol xs={12}>
+                  <CFormLabel htmlFor="serviceTypeCode">Priority</CFormLabel>
+                  <CFormInput value={editPriority} type="text" onChange={(e) => setPriority(e.target.value)} id="serviceTypeCode" placeholder="Priority" />
                 </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="serviceType">Service Type</CFormLabel>
-                  <CFormInput value={editServiceTypeDisplay} type="text" onChange={(e) => setEditServiceTypeDisplay(e.target.value)} id="serviceType" placeholder="Type Service Type" />
+                <CCol xs={12}>
+                  <CFormLabel htmlFor="serviceType">Description</CFormLabel>
+                  <CFormTextarea value={description} type="textarea" onChange={(e) => setDescription(e.target.value)} id="serviceType" placeholder="Description" />
                 </CCol>
 
 
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="appointmentTypeCode">Appointment Type Code</CFormLabel>
-                  <CFormInput value={editAppointmentTypeCode} type="text" onChange={(e) => setEditAppointmentTypeCode(e.target.value)} id="appointmentTypeCode" placeholder="Type Service Type Code" />
+                {/* <CCol xs={6}>
+                  <CFormLabel htmlFor="appointmentTypeCode">Status</CFormLabel>
+                  <CFormInput type="text" onChange={(e) => setAppointmentTypeCode(e.target.value)} id="appointmentTypeCode" placeholder="Type Service Type Code" />
                 </CCol>
 
 
                 <CCol xs={6}>
                   <CFormLabel htmlFor="appointmentType">Appointment Type </CFormLabel>
-                  <CFormInput value={editAppointmentTypeDisplay} type="text" onChange={(e) => setEditAppointmentTypeDisplay(e.target.value)} id="appointmentType" placeholder="Appointment Type" />
+                  <CFormInput type="text" onChange={(e) => setAppointmentTypeDisplay(e.target.value)} id="appointmentType" placeholder="Appointment Type" />
                 </CCol>
 
                 <CCol md={12}>
                   <CFormLabel htmlFor="comment">Comment</CFormLabel>
-                  <CFormTextarea value={editComment} onChange={(e) => setEditComment(e.target.value)} id="comment"></CFormTextarea>
-                </CCol>
+                  <CFormTextarea onChange={(e) => setComment(e.target.value)} id="comment"></CFormTextarea>
+                </CCol> */}
 
                 <CCol md={12}>
                   <CFormLabel htmlFor="status">Status</CFormLabel>
-                  <CFormSelect value={editStatus} onChange={(e) => setEditStatus(e.target.value)} id="status">
+                  <CFormSelect value={status} onChange={(e) => setStatus(e.target.value)} id="status">
                     <option>Choose...</option>
                     <option value='Booked'>Booked</option>
                     <option value='Confirmed'>Confirmed</option>
