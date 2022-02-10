@@ -71,6 +71,13 @@ const Appointments = (props) => {
   useEffect(() => {
     fetchAppointments();
   }, [])
+  // &resource=Task&encounter=9b7fac67-cfbe-d8ae-a3c6-e400ae1a95e1
+
+  const filterExtensionId = (item) => {
+    let encounterString = item.resource.extension[0].url;
+    let encounterId = encounterString.substring(encounterString.lastIndexOf('/')+1, encounterString.length-1);
+    return encounterId;
+  }
 
   const fetchAppointments = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
@@ -81,12 +88,12 @@ const Appointments = (props) => {
       var appointmentList = [];
       response.data.entry?.forEach((item, index) => {
         appointmentList.push({
-            // name: item.resource?.name[0]?.given?.join(' '),
             id: item.resource.id,
             start: item.resource.start,
             end: item.resource.end,
             comment: item.resource.comment,
             status: item.resource.status,
+            encounter_id: item.resource.extension ? filterExtensionId(item) : null
         })
       })
       setRequesting(false);
@@ -311,7 +318,8 @@ const Appointments = (props) => {
   }
 
   const navigateTasks = (item) => {
-    history.push(`tasks?encounter_id=${item.id}`)
+    console.log('asdasdasd', item)
+    history.push(`tasks?encounter_id=${item.encounter_id}&patient_id=${patientId}`)
   }
   return (
     <CRow>

@@ -37,7 +37,9 @@ const Tasks = (props) => {
   const [editVisible, setEditVisible] = useState(false)
   const [deleteVisible, setDeleteVisible] = useState(false)
   const [selectedId, setSelectedId] = useState(false);
+  const [encounterId, setEncounterId] = useState(false);
   const [patientId, setPatientId] = useState(false);
+
 
 
   // new Appointment fields
@@ -75,70 +77,84 @@ const Tasks = (props) => {
   }, [])
 
   const fetchAppointments = () => {
+    const encounter_id = new URLSearchParams(search).get('encounter_id');
     const patient_id = new URLSearchParams(search).get('patient_id');
+
+    setEncounterId(encounter_id)
     setPatientId(patient_id)
-    let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Appointment&actor=Patient/${patient_id}&_sort=appointment-sort-start`;
+
+    let get_tasks_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Task&encounter=${encounter_id}`;
     setRequesting(true);
-    axios.get(get_patients_url).then((response) => {
-      var appointmentList = [];
+    axios.get(get_tasks_url).then((response) => {
+      var tasksList = [];
+      console.log(response)
       response.data.entry?.forEach((item, index) => {
-        appointmentList.push({
-            // name: item.resource?.name[0]?.given?.join(' '),
+        tasksList.push({
             id: item.resource.id,
-            start: item.resource.start,
-            end: item.resource.end,
-            comment: item.resource.comment,
+            description: item.resource.description,
+            period: item.resource.executionPeriod.start,
+            order: item.resource.intent,
+            priority: item.resource.priority,
             status: item.resource.status,
+            description: item.resource.description
         })
       })
+      console.log(tasksList)
       setRequesting(false);
-      setTasksList(appointmentList);
+      setTasksList(tasksList);
     })
   }
 
   const addAppointment = () => {
-    console.log(start)
-    console.log(end)
     const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
-      "resourceType":"Appointment",
-      "status":'booked',
-      "serviceType":[
-        {
-          "coding":[
-            {
-              "code":serviceTypeCode,
-              "display":serviceTypeDisplay
-            }
-          ]
-        }
-      ],
-      "appointmentType":{
-        "coding":[
-          {
-            "code":appointmentTypeCode,
-            "display":appointmentTypeDisplay
-          }
-        ]
-      },
-      // "start":start,
-      // "end":end,
-      "start": "2021-12-15T12:00:00+00:00",
-      "end": "2021-12-15T12:30:00+00:00",
-      "comment":comment,
-      "participant":[
-        {
-          "actor":{
-            "reference":"Patient/"+patient_id
-          },
-          "status":"accepted"
-        },
-      ]
+      "resourceType": "Task",
+      "id": "e180f26c-2b98-48cf-a35a-b1cfcadb000b",
+                
+                "extension": [
+                    {
+                        "url": "http://fhir.medlix.org/StructureDefinition/task-cms-id",
+                        "valueString": "1"
+                    },
+                    {
+                        "url": "http://fhir.medlix.org/StructureDefinition/time-since-last-execution",
+                        "valueString": "2022-05-11T16:00:00.0000000+00:00"
+                    }
+                ],
+                "groupIdentifier": {
+                    "value": "de589d09-f57a-43bb-696c-5568282559b1"
+                },
+                "status": "accepted",
+                "statusReason": {
+                    "text": "Created"
+                },
+                "intent": "order",
+                "priority": "routine",
+                "code": {
+                    "coding": [
+                        {
+                            "code": "tasks.measurement"
+                        }
+                    ]
+                },
+                "description": "Temperature measurement",
+                "encounter": {
+                    "reference": `Encounter/${encounterId}`
+                },
+                "executionPeriod": {
+                    "start": "2022-01-28T16:00:00.6831150Z"
+                },
+                "authoredOn": "2022-01-25T14:54:10.6831150Z",
+                "lastModified": "2022-01-25T14:54:10.6831150Z",
+                "owner": {
+                    "reference": `Patient/${patient_id}`
+                }
+      
     }
 
 
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
+    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Task&encounter=${encounterId}`, data)
       .then((response) => {
       addAppointmentEncounter(response.data.id);
       setVisible(false)
@@ -235,10 +251,10 @@ const Tasks = (props) => {
 
   }
 
-  const deletePatient = () => {
-    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Appointment&actor=Patient/'+selectedPatientId;
+  const deleteTask = () => {
+    let delete_task_url = process.env.REACT_APP_BASE_DELETE_URL+`&resource=Task/${selectedId}`;
     setRequesting(true);
-    axios.delete(delete_patient_url).then((response) => {
+    axios.delete(delete_task_url).then((response) => {
       setRequesting(false);
       setDeleteVisible(false);
       fetchAppointments();
@@ -267,11 +283,14 @@ const Tasks = (props) => {
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
                     {/*<CTableHeaderCell scope="col">ID</CTableHeaderCell>*/}
-                    <CTableHeaderCell scope="col">Start</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">End</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Id</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Order</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Period</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Priority</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Description</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Comment</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
+                  
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
@@ -281,15 +300,15 @@ const Tasks = (props) => {
                         <CTableRow key={item.id}>
                           <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
                           {/*<CTableDataCell>{item.id}</CTableDataCell>*/}
-                          <CTableDataCell>{item.start}</CTableDataCell>
-                          <CTableDataCell>{item.end}</CTableDataCell>
-                          <CTableDataCell>{item.status}</CTableDataCell>
+                          <CTableDataCell>{item.order}</CTableDataCell>
+                          <CTableDataCell>{item.period}</CTableDataCell>
+                          <CTableDataCell>{item.priority}</CTableDataCell>
                           <CTableDataCell>
-                            {item.comment}
+                            {item.description}
                           </CTableDataCell>
-                          {/*<CTableDataCell>*/}
-                          {/*  <a href="javascript:void(0)" onClick={() => setAndEditModal(item)}>Edit Appointment</a>*/}
-                          {/*</CTableDataCell>*/}
+                          <CTableDataCell>{item.description}</CTableDataCell>
+                          <CTableDataCell>{item.status}</CTableDataCell>
+                          
                           <CTableDataCell>
                             <CButton
                               color="success"
@@ -471,7 +490,7 @@ const Tasks = (props) => {
         <CButton color="secondary" onClick={() => setDeleteVisible(false)}>
           Close
         </CButton>
-        <CButton color="primary" onClick={() => deletePatient()}>Confirm Delete</CButton>
+        <CButton color="primary" onClick={() => deleteTask()}>Confirm Delete</CButton>
       </CModalFooter>
     </CModal>
 
