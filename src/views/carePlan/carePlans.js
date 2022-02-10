@@ -106,9 +106,9 @@ const Appointments = (props) => {
   }
   const editCarePlan = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
-
     const data = {
       "resourceType": "CarePlan",
+      "id":selectedId,
       "identifier":[
         {
           "system":"medlix",
