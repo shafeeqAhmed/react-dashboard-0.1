@@ -161,12 +161,12 @@ const Appointments = (props) => {
       ]
     }
 
-
-
     axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Encounter`, data)
       .then((response) => {
     //   updating encounter to appointment extension
         updateEncountOnAppointment(response, appointmentId)
+        console.log('this is the encounter')
+        console.log(response.data.data)
         setVisible(false)
     }).catch((e)=>{
       setVisible(false)
@@ -174,6 +174,8 @@ const Appointments = (props) => {
     })
   }
   const updateEncountOnAppointment = (enc, appointmentId) => {
+    console.log('----------------00000000000000000-------------')
+    console.log(enc)
     const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
       "resourceType":"Appointment",
