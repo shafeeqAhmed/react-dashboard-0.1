@@ -95,7 +95,7 @@ const Appointments = (props) => {
                     "display": "Heart rate"
                 }
             ],
-            "text": "Heart rate"
+            "text": title
         },
         "subject": {
             "reference": "Patient/"+patient_id

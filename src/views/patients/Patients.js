@@ -151,6 +151,7 @@ const Patients = () => {
     axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedPatientId, data).then((response) => {
       console.log(response);
       setEditVisible(false)
+      fetchRecords()
     }).catch((e)=>{
       setEditVisible(false)
       console.log(e)
