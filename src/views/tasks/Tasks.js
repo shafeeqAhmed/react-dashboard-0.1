@@ -85,6 +85,7 @@ const Tasks = (props) => {
           priority: item.resource.priority,
           status: item.resource.status,
           description: item.resource.description,
+          cmsId: item.resource.extension[0].valueString
           // code: item.resource.code.config[0].code,
           // cmsid: item.resource.extension[0]
         })
@@ -97,6 +98,7 @@ const Tasks = (props) => {
   }
 
   const addTask = () => {
+    setRequesting(true)
     const patient_id = new URLSearchParams(search).get('patient_id');
     const encounterId = new URLSearchParams(search).get('encounter_id');
     const data = {
@@ -121,8 +123,8 @@ const Tasks = (props) => {
         "text": "Created"
       },
       "intent": "order",
-      // "priority": "routine",
-      "priority": priority,
+      "priority": "routine",
+      // "priority": priority,
       "code": {
         "coding": [
           {
@@ -151,22 +153,23 @@ const Tasks = (props) => {
       .then((response) => {
         fetchTask()
         setVisible(false)
+        setRequesting(false)
       }).catch((e) => {
       setVisible(false)
+      setRequesting(false)
     })
   }
   const editTask = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     const encounterId = new URLSearchParams(search).get('encounter_id');
-    alert(encounterId)
+    setRequesting(true)
     const data = {
       "resourceType": "Task",
       "id": selectedId,
       "extension": [
         {
           "url": "http://fhir.medlix.org/StructureDefinition/task-cms-id",
-          // "valueString": editCmsId
-          "valueString": selectedId
+          "valueString": editCmsId
         },
         // {
         //   "url": "http://fhir.medlix.org/StructureDefinition/time-since-last-execution",
@@ -192,7 +195,7 @@ const Tasks = (props) => {
           }
         ]
       },
-      "description": description,
+      "description": editDescription,
       // "description": 'description',
       "encounter": {
         "reference": `Encounter/${encounterId}`
@@ -208,15 +211,15 @@ const Tasks = (props) => {
 
     }
 
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL + `&resource=Task`, data)
+    axios.put(process.env.REACT_APP_BASE_EDIT_URL + `&resource=Task&id=${selectedId}`, data)
 
-    // axios.put(process.env.REACT_APP_BASE_EDIT_URL + '&resource=Task/' + selectedPatientId, data)
       .then((response) => {
-      console.log(response);
+      setRequesting(false)
       setEditVisible(false)
+        fetchTask()
     }).catch((e) => {
       setEditVisible(false)
-      console.log(e)
+      setRequesting(true)
     })
   }
 
@@ -226,6 +229,7 @@ const Tasks = (props) => {
     setSelectedId(item.id)
     setEditStatus(item.status)
     setEditPriority(item.priority)
+    setEditCmsId(item.cmsId)
     setEditPeriod(item.period)
     setEditDescription(item.description)
     setEditVisible(true)
@@ -312,9 +316,10 @@ const Tasks = (props) => {
               <CTableHead>
                 <CTableRow>
                   <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">ID</CTableHeaderCell>
+                  {/*<CTableHeaderCell scope="col">ID</CTableHeaderCell>*/}
                   <CTableHeaderCell scope="col">Period</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Priority</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">CMS ID</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Description</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
@@ -327,9 +332,10 @@ const Tasks = (props) => {
                   return (
                     <CTableRow key={item.id}>
                       <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
-                      <CTableDataCell>{item.id}</CTableDataCell>
+                      {/*<CTableDataCell>{item.id}</CTableDataCell>*/}
                       <CTableDataCell>{item.period}</CTableDataCell>
                       <CTableDataCell>{item.priority}</CTableDataCell>
+                      <CTableDataCell>{item.cmsId}</CTableDataCell>
                       <CTableDataCell>{item.description}</CTableDataCell>
                       <CTableDataCell>{item.status}</CTableDataCell>
 
