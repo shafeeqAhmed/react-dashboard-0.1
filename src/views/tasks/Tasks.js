@@ -24,13 +24,14 @@ import {
   CForm,
   CFormLabel,
   CFormCheck,
-  CFormSelect, CFormTextarea
+  CFormSelect, CFormTextarea, CPagination, CPaginationItem
 } from '@coreui/react'
 import {DocsCallout, DocsExample} from 'src/components'
 import {Link, useLocation} from 'react-router-dom'
 
 const Tasks = (props) => {
 
+  const [searching, setSearching] = React.useState(true)
   const [tasksList, setTasksList] = useState([]);
   const [requesting, setRequesting] = useState(false);
   const [visible, setVisible] = useState(false)
@@ -38,7 +39,9 @@ const Tasks = (props) => {
   const [deleteVisible, setDeleteVisible] = useState(false)
   const [selectedId, setSelectedId] = useState(false);
   const [patientId, setPatientId] = useState(false);
-
+  const [encounterId, setEncounterId] = useState(false);
+  const [urlPagination, setUrlPagination] = React.useState(null)
+  const [isFirstPage, setIsFirstPage] = React.useState(true)
 
   // new Appointment fields
 
@@ -49,7 +52,6 @@ const Tasks = (props) => {
   const [cmsId, setCmsId] = useState("");
 
 
-  const [selectedPatientId, setSelectedPatientId] = useState(false);
   const search = useLocation().search;
 
 
@@ -62,18 +64,19 @@ const Tasks = (props) => {
 
 
   useEffect(() => {
-    fetchAppointments();
+    fetchTask();
   }, [])
 
-  const fetchAppointments = () => {
+  const fetchTask = (url = null) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     const encounter_id = new URLSearchParams(search).get('encounter_id');
     setPatientId(patient_id)
-
+    setEncounterId(encounter_id)
     let get_tasks_url = process.env.REACT_APP_BASE_GET_URL + `&resource=Task&encounter=${encounter_id}`;
     setRequesting(true);
-    axios.get(get_tasks_url).then((response) => {
-      var appointmentList = [];
+    axios.get(url ? url : get_tasks_url).then((response) => {
+      checkPagination(response.data)
+      var tasksList = [];
       response.data.entry?.forEach((item, index) => {
         tasksList.push({
           id: item.resource.id,
@@ -146,7 +149,7 @@ const Tasks = (props) => {
 
     axios.post(process.env.REACT_APP_BASE_POST_URL + `&resource=Task&encounter=${encounterId}`, data)
       .then((response) => {
-        fetchAppointments()
+        fetchTask()
         setVisible(false)
       }).catch((e) => {
       setVisible(false)
@@ -228,71 +231,58 @@ const Tasks = (props) => {
     setEditVisible(true)
 
   }
-
-  const editPatient = () => {
-    const data = {
-      "resourceType": "Appointment",
-      "id": "279260f5-aa63-4893-86ef-363a39b8f24d",
-      "meta": {
-        "versionId": "1",
-        "lastUpdated": "2022-02-09T13:39:39.374+00:00"
-      },
-      "status": "booked",
-      "serviceType": [
-        {
-          "coding": [
-            {
-              "code": "Omnis ea itaque elit",
-              "display": "Accusantium mollit a"
-            }
-          ]
-        }
-      ],
-      "appointmentType": {
-        "coding": [
-          {
-            "code": "Quam consectetur ac",
-            "display": "Et nesciunt esse do"
-          }
-        ]
-      },
-      "start": "2021-12-15T12:00:00+00:00",
-      "end": "2021-12-15T12:30:00+00:00",
-      "comment": "Enim commodi aut non",
-      "participant": [
-        {
-          "actor": {
-            "reference": "Patient/9e909e52-61a1-be50-1878-a12ef8c36346"
-          },
-          "status": "accepted"
-        }
-      ]
-    }
-
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL + '&resource=Patient/' + selectedPatientId, data).then((response) => {
-      console.log(response);
-      setEditVisible(false)
-    }).catch((e) => {
-      setEditVisible(false)
-      console.log(e)
-    })
-
-  }
-
   const deleteTask = () => {
     let delete_task_url = process.env.REACT_APP_BASE_DELETE_URL+`&resource=Task/${selectedId}`;
     setRequesting(true);
     axios.delete(delete_task_url).then((response) => {
       setRequesting(false);
       setDeleteVisible(false);
-      fetchAppointments();
+      fetchTask();
     }).catch((err) => {
       setRequesting(false);
       setDeleteVisible(false);
-      fetchAppointments();
+      fetchTask();
     })
   }
+  //pagination functions
+  const getCtParamFromUrl = (url = null) => {
+    const urlParams = url.split('?')[1]
+    const params = urlParams.split('&')
+    const ctParam = params.find((param) => param.includes('ct=')).split('=')[1]
+    return ctParam
+  }
+  const checkPagination = (response) => {
+    if (response.link) {
+      const nextLink = response.link.find((link) => link.relation === 'next')
+      if (nextLink) {
+        const nextUrl = nextLink.url
+        const nextPagination = getCtParamFromUrl(nextUrl)
 
+        if (nextPagination) {
+          let baseUrl = process.env.REACT_APP_BASE_GET_URL + `&resource=Task&encounter=${encounterId}`;
+
+          const nextUrlWithPagination = `${baseUrl}&ct=${nextPagination}`
+          setUrlPagination(nextUrlWithPagination)
+        }
+      } else {
+        setUrlPagination(null)
+        setSearching(false)
+      }
+    } else {
+      setUrlPagination(null)
+      setSearching(false)
+    }
+  }
+  const handleNextPagination = () => {
+    if (urlPagination) {
+      setIsFirstPage(false)
+      fetchTask(urlPagination)
+    }
+  }
+  const handleFirstPagination = () => {
+    setIsFirstPage(true)
+    fetchTask()
+  }
   return (
     <CRow>
       <CCol xs={12}>
@@ -304,9 +294,25 @@ const Tasks = (props) => {
           </CCardHeader>
           <CCardBody>
             <CTable>
+              <CTableCaption>
+                <span className="float-start">List of Tasks</span>
+                <CPagination align="end">
+                  {!isFirstPage && (
+                    <CPaginationItem  className="btn"  itemType="prev" onClick={handleFirstPagination}>
+                      &laquo; Prev
+                    </CPaginationItem>
+                  )}
+                  {urlPagination && (
+                    <CPaginationItem className="btn" itemType="next" onClick={handleNextPagination}>
+                      Next &raquo;
+                    </CPaginationItem>
+                  )}
+                </CPagination>
+              </CTableCaption>
               <CTableHead>
                 <CTableRow>
                   <CTableHeaderCell scope="col">#</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Period</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Priority</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Description</CTableHeaderCell>
@@ -321,6 +327,7 @@ const Tasks = (props) => {
                   return (
                     <CTableRow key={item.id}>
                       <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                      <CTableDataCell>{item.id}</CTableDataCell>
                       <CTableDataCell>{item.period}</CTableDataCell>
                       <CTableDataCell>{item.priority}</CTableDataCell>
                       <CTableDataCell>{item.description}</CTableDataCell>

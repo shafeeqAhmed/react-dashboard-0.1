@@ -24,7 +24,7 @@ import {
   CForm,
   CFormLabel,
   CFormCheck,
-  CFormSelect
+  CFormSelect, CPagination, CPaginationItem
 } from '@coreui/react'
 import { DocsCallout, DocsExample } from 'src/components'
 import { Link, useLocation } from 'react-router-dom'
@@ -37,6 +37,12 @@ const Appointments = (props) => {
   const [editVisible, setEditVisible] = useState(false)
   const [deleteVisible, setDeleteVisible] = useState(false)
   const [selectedId, setSelectedId] = useState(false)
+  const [urlPagination, setUrlPagination] = React.useState(null)
+  const [isFirstPage, setIsFirstPage] = React.useState(true)
+  const [searching, setSearching] = React.useState(true)
+
+
+
 
   // new patient fields
   const [firstName, setFirstName] = useState("");
@@ -57,15 +63,16 @@ const Appointments = (props) => {
 
 
   useEffect(() => {
-    fetchMeasurements()
+    fetchRecords()
   }, [])
 
 
-  const fetchMeasurements = () => {
+  const fetchRecords = (url = null) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Observation&subject=Patient/${patient_id}`;
     setRequesting(true);
-    axios.get(get_patients_url).then((response) => {
+    axios.get(url ? url : get_patients_url).then((response) => {
+      checkPagination(response.data)
       var carePlans = [];
       response.data.entry?.forEach((item, index) => {
           console.log(item)
@@ -110,7 +117,7 @@ const Appointments = (props) => {
 
     axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Observation&subject=Patient/${patient_id}`, data)
       .then((response) => {
-      fetchMeasurements()
+      fetchRecords()
       setVisible(false)
     }).catch((e)=>{
       setVisible(false)
@@ -179,12 +186,54 @@ const Appointments = (props) => {
     axios.delete(delete_patient_url).then((response) => {
       setRequesting(false);
       setDeleteVisible(false);
-      fetchMeasurements();
+      fetchRecords();
     }).catch((err) => {
       setRequesting(false);
       setDeleteVisible(false);
-      fetchMeasurements();
+      fetchRecords();
     })
+  }
+
+
+  //pagination functions
+  const getCtParamFromUrl = (url = null) => {
+    const urlParams = url.split('?')[1]
+    const params = urlParams.split('&')
+    // const ctParam = params.find((param) => param.includes('ct=')).split('=')[1]
+    return params[1]
+  }
+  const checkPagination = (response) => {
+    if (response.link) {
+      const nextLink = response.link.find((link) => link.relation === 'next')
+      if (nextLink) {
+        const nextUrl = nextLink.url
+        const nextPagination = getCtParamFromUrl(nextUrl)
+
+        if (nextPagination) {
+          const patient_id = new URLSearchParams(search).get('patient_id');
+          let baseUrl = process.env.REACT_APP_BASE_GET_URL+`&resource=Observation&subject=Patient/${patient_id}`;
+
+          const nextUrlWithPagination = `${baseUrl}&${nextPagination}`
+          setUrlPagination(nextUrlWithPagination)
+        }
+      } else {
+        setUrlPagination(null)
+        setSearching(false)
+      }
+    } else {
+      setUrlPagination(null)
+      setSearching(false)
+    }
+  }
+  const handleNextPagination = () => {
+    if (urlPagination) {
+      setIsFirstPage(false)
+      fetchRecords(urlPagination)
+    }
+  }
+  const handleFirstPagination = () => {
+    setIsFirstPage(true)
+    fetchRecords()
   }
 
   return (
@@ -193,11 +242,27 @@ const Appointments = (props) => {
         <CCard className="mb-4">
           <CCardHeader>
             <strong>Measurement</strong> <small>listing</small>
-            <CButton style={{float: 'right'}} onClick={() => setVisible(!visible)}>Add Measuremet</CButton>
+            <CButton style={{float: 'right'}} onClick={() => setVisible(!visible)}>Add Measurement</CButton>
 
           </CCardHeader>
           <CCardBody>
               <CTable>
+                <CTableCaption>
+                  <span className="float-start">List of Measurement</span>
+                  <CPagination align="end">
+                    {!isFirstPage && (
+                      <CPaginationItem  className="btn"  itemType="prev" onClick={handleFirstPagination}>
+                        &laquo; Prev
+                      </CPaginationItem>
+                    )}
+                    {urlPagination && (
+                      <CPaginationItem className="btn" itemType="next" onClick={handleNextPagination}>
+                        Next &raquo;
+                      </CPaginationItem>
+                    )}
+                  </CPagination>
+                </CTableCaption>
+
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>

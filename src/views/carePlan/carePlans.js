@@ -24,7 +24,7 @@ import {
   CForm,
   CFormLabel,
   CFormCheck,
-  CFormSelect
+  CFormSelect, CPagination, CPaginationItem
 } from '@coreui/react'
 import { DocsCallout, DocsExample } from 'src/components'
 import { Link, useLocation } from 'react-router-dom'
@@ -37,6 +37,10 @@ const Appointments = (props) => {
   const [visible, setVisible] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
   const [deleteVisible, setDeleteVisible] = useState(false)
+  const [urlPagination, setUrlPagination] = React.useState(null)
+  const [isFirstPage, setIsFirstPage] = React.useState(true)
+  const [searching, setSearching] = React.useState(true)
+
 
   // new carePlan fields
   const [title, setTitle] = useState("");
@@ -52,15 +56,16 @@ const Appointments = (props) => {
 
 
   useEffect(() => {
-    fetchRecord()
+    fetchRecords()
   }, [])
 
-  const fetchRecord = () => {
+  const fetchRecords = (url = null) => {
 
     const patient_id = new URLSearchParams(search).get('patient_id');
     let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=CarePlan&subject=Patient/${patient_id}`;
     setRequesting(true);
-    axios.get(get_patients_url).then((response) => {
+    axios.get(url ? url : get_patients_url).then((response) => {
+      checkPagination(response.data)
       var carePlans = [];
       response.data.entry?.forEach((item, index) => {
         carePlans.push({
@@ -97,11 +102,11 @@ const Appointments = (props) => {
       },
     }
     axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=CarePlan', data).then((response) => {
-      fetchRecord();
+      fetchRecords();
       setVisible(false)
     }).catch((e)=>{
       setVisible(false)
-      fetchRecord()
+      fetchRecords()
     })
   }
   const editCarePlan = () => {
@@ -125,12 +130,12 @@ const Appointments = (props) => {
     }
     const url = process.env.REACT_APP_BASE_EDIT_URL+'&resource=CarePlan/'+selectedId
     axios.put(url, data).then((response) => {
-      fetchRecord();
+      fetchRecords();
       setEditVisible(false)
     }).catch((e)=>{
       alert('there is something going wrong please try again')
       setEditVisible(false)
-      fetchRecord()
+      fetchRecords()
     })
   }
   const deleteCarePlan = () => {
@@ -139,11 +144,11 @@ const Appointments = (props) => {
     axios.delete(delete_patient_url).then((response) => {
       setRequesting(false);
       setDeleteVisible(false);
-      fetchRecord();
+      fetchRecords();
     }).catch((err) => {
       setRequesting(false);
       setDeleteVisible(false);
-      fetchRecord();
+      fetchRecords();
     })
   }
 
@@ -167,6 +172,48 @@ const Appointments = (props) => {
   }
 
 
+  //pagination functions
+  const getCtParamFromUrl = (url = null) => {
+    const urlParams = url.split('?')[1]
+    const params = urlParams.split('&')
+    return params[1]
+    // const ctParam = params.find((param) => param.includes('ct=')).split('=')[1]
+    // return ctParam
+  }
+  const checkPagination = (response) => {
+    if (response.link) {
+      const nextLink = response.link.find((link) => link.relation === 'next')
+      if (nextLink) {
+        const nextUrl = nextLink.url
+        const nextPagination = getCtParamFromUrl(nextUrl)
+
+        if (nextPagination) {
+          const patient_id = new URLSearchParams(search).get('patient_id');
+          let baseUrl = process.env.REACT_APP_BASE_GET_URL+`&resource=CarePlan&subject=Patient/${patient_id}`;
+
+
+          const nextUrlWithPagination = `${baseUrl}&${nextPagination}`
+          setUrlPagination(nextUrlWithPagination)
+        }
+      } else {
+        setUrlPagination(null)
+        setSearching(false)
+      }
+    } else {
+      setUrlPagination(null)
+      setSearching(false)
+    }
+  }
+  const handleNextPagination = () => {
+    if (urlPagination) {
+      setIsFirstPage(false)
+      fetchRecords(urlPagination)
+    }
+  }
+  const handleFirstPagination = () => {
+    setIsFirstPage(true)
+    fetchRecords()
+  }
   return (
     <CRow>
       <CCol xs={12}>
@@ -178,6 +225,22 @@ const Appointments = (props) => {
           </CCardHeader>
           <CCardBody>
               <CTable>
+                <CTableCaption>
+                  <span className="float-start">List of Care Plan</span>
+                  <CPagination align="end">
+                    {!isFirstPage && (
+                      <CPaginationItem  className="btn"  itemType="prev" onClick={handleFirstPagination}>
+                        &laquo; Prev
+                      </CPaginationItem>
+                    )}
+                    {urlPagination && (
+                      <CPaginationItem className="btn" itemType="next" onClick={handleNextPagination}>
+                        Next &raquo;
+                      </CPaginationItem>
+                    )}
+                  </CPagination>
+                </CTableCaption>
+
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
