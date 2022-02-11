@@ -76,6 +76,7 @@ const Tasks = (props) => {
     const encounter_id = new URLSearchParams(search).get('encounter_id');
     setPatientId(patient_id)
     setEncounterId(encounter_id)
+
     let get_tasks_url = process.env.REACT_APP_BASE_GET_URL + `&resource=Task&encounter=${encounter_id}`;
     setRequesting(true);
     axios.get(url ? url : get_tasks_url).then((response) => {
@@ -84,7 +85,7 @@ const Tasks = (props) => {
       response.data.entry?.forEach((item, index) => {
         tasksList.push({
           id: item.resource.id,
-          period: item.resource.executionPeriod.start,
+          period: item.resource.executionPeriod?.start,
           order: item.resource.intent,
           priority: item.resource.priority,
           status: item.resource.status,
@@ -92,14 +93,13 @@ const Tasks = (props) => {
           cmsId: item.resource.extension[0].valueString,
           exStart: item.resource.executionPeriod?.start,
           exEnd: item.resource.executionPeriod?.end
-          // code: item.resource.code.config[0].code,
-          // cmsid: item.resource.extension[0]
         })
       })
       setRequesting(false);
       setTasksList(tasksList);
     }).catch((error => {
-
+      console.log(error)
+      setRequesting(false)
     }))
   }
 
@@ -107,6 +107,8 @@ const Tasks = (props) => {
     setRequesting(true)
     const patient_id = new URLSearchParams(search).get('patient_id');
     const encounterId = new URLSearchParams(search).get('encounter_id');
+    alert(executionStart)
+    alert(executionEnd)
     const data = {
       "resourceType": "Task",
       // "id": "e180f26c-2b98-48cf-a35a-b1cfcadb000b",
@@ -405,11 +407,11 @@ const Tasks = (props) => {
 
                   <CCol md={6}>
                   <CFormLabel htmlFor="start">Execution Start </CFormLabel>
-                  <CFormInput type='datetime-local' onChange={(e) => setEditExecutionStart(e.target.value)} value={editExecutionStart} id="start" />
+                  <CFormInput type='datetime-local' onChange={(e) => setExecutionStart(e.target.value)} value={editExecutionStart} id="start" />
                 </CCol>
                 <CCol md={6}>
                   <CFormLabel htmlFor="end">Execution End </CFormLabel>
-                  <CFormInput type='datetime-local' onChange={(e) => setEditExecutionEnd(e.target.value)} value={editExecutionEnd} id="end" />
+                  <CFormInput type='datetime-local' onChange={(e) => setExecutionEnd(e.target.value)} value={editExecutionEnd} id="end" />
                 </CCol>
 
                   <CCol md={12}>
