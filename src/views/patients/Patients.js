@@ -116,13 +116,14 @@ const Patients = () => {
 
   const setAndEditModal = (item) => {
     console.log('item', item);
+
      var names = item.name.split(' ')
 
     setEditFirstName(names[0])
     setEditLastName(names[1] ?? "")
     setEditGender(item.gender)
     setEditDob(item.dob)
-    setEditStatus(item.status)
+    setEditStatus(item.isActive)
 
     setSelectedPatientId(item.id)
     setEditVisible(true)
@@ -336,7 +337,7 @@ const Patients = () => {
                   <CFormLabel htmlFor="inputState">Gender</CFormLabel>
                   <CFormSelect onChange={(e) => setGender(e.target.value)} id="inputState">
                     <option>Choose...</option>
-                    <option value='male'>Male</option>
+                    <option selected={true} value='male'>Male</option>
                     <option value='female'>Female</option>
                   </CFormSelect>
                 </CCol>

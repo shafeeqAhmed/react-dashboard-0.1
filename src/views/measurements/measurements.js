@@ -45,20 +45,13 @@ const Appointments = (props) => {
 
 
   // new patient fields
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [dob, setDob] = useState("");
-  const [gender, setGender] = useState("");
-  const [status, setStatus] = useState(false);
+  const [title, setTitle] = useState("");
 
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
   const [editDob, setEditDob] = useState("");
   const [editGender, setEditGender] = useState("");
   const [editStatus, setEditStatus] = useState(false);
-  const [editPatientObject, setEditPatientObject] = useState(false);
-  const [selectedPatientId, setSelectedPatientId] = useState(false);
-  const [editSchema, setEditSchema] = useState(false);
   const search = useLocation().search;
 
 
@@ -89,7 +82,7 @@ const Appointments = (props) => {
     })
   }
 
-  const addPatient = () => {
+  const addMeasurement = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
         "resourceType": "Observation",
@@ -124,62 +117,6 @@ const Appointments = (props) => {
       console.log(e)
     })
   }
-
-  const setAndEditModal = (item) => {
-    console.log('item', item);
-     var names = item.name.split(' ')
-    // let editObjectSchema = {
-    //   "resourceType": "Patient",
-    //   "active": item.isActive,
-    //   "name": [
-    //     {
-    //       "use": "official",
-    //       "family": names[names.length-1],
-    //       "given": names
-    //     }
-    //   ],
-    //   "gender": item.gender,
-    //   "birthDate": item.dob
-    // }
-
-    setEditFirstName(names[0])
-    setEditLastName(names[1] ?? "")
-    setEditGender(item.gender)
-    setEditDob(item.dob)
-    setEditStatus(item.status)
-
-    setSelectedPatientId(item.id)
-    setEditVisible(true)
-
-  }
-
-  const editPatient = () => {
-    const data = {
-      "resourceType": "Patient",
-      "active": editStatus == 'on'? true:false,
-      "name": [
-        {
-          "use": "official",
-          "family": editLastName,
-          "given": [
-            editFirstName, editLastName
-          ]
-        }
-      ],
-      "gender": editGender,
-      "birthDate": editDob
-    }
-
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedPatientId, data).then((response) => {
-      console.log(response);
-      setEditVisible(false)
-    }).catch((e)=>{
-      setEditVisible(false)
-      console.log(e)
-    })
-
-  }
-
   const deleteMeasurement = () => {
     let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Observation/'+selectedId;
     setRequesting(true);
@@ -193,7 +130,6 @@ const Appointments = (props) => {
       fetchRecords();
     })
   }
-
 
   //pagination functions
   const getCtParamFromUrl = (url = null) => {
@@ -307,22 +243,19 @@ const Appointments = (props) => {
         <CCard className="mb-4">
           <CCardBody>
               <CForm className="row g-3">
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputEmail4">Title</CFormLabel>
-                  <CFormInput onChange={(e) => setFirstName(e.target.value)} type="text" id="inputEmail4" />
+                <CCol md={12}>
+                  <CFormLabel htmlFor="title">Title</CFormLabel>
+                  <CFormInput onChange={(e) => setTitle(e.target.value)} type="text" id="title" />
                 </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputPassword4">Intent</CFormLabel>
-                  <CFormInput onChange={(e) => setLastName(e.target.value)} type="text" id="inputPassword4" />
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputState">Status</CFormLabel>
-                  <CFormSelect onChange={(e) => setGender(e.target.value)} id="inputState">
-                    <option>Choose...</option>
-                    <option value='true'>Active</option>
-                    <option value='false'>InActive</option>
-                  </CFormSelect>
-                </CCol>
+
+                {/*<CCol md={6}>*/}
+                {/*  <CFormLabel htmlFor="inputState">Status</CFormLabel>*/}
+                {/*  <CFormSelect onChange={(e) => setGender(e.target.value)} id="inputState">*/}
+                {/*    <option>Choose...</option>*/}
+                {/*    <option value='true'>Active</option>*/}
+                {/*    <option value='false'>InActive</option>*/}
+                {/*  </CFormSelect>*/}
+                {/*</CCol>*/}
               </CForm>
           </CCardBody>
         </CCard>
@@ -332,55 +265,10 @@ const Appointments = (props) => {
         <CButton color="secondary" onClick={() => setVisible(false)}>
           Close
         </CButton>
-        <CButton color="primary" onClick={() => addPatient()}>Save changes</CButton>
+        <CButton color="primary" onClick={() => addMeasurement()}>Save changes</CButton>
       </CModalFooter>
     </CModal>
 
-    <CModal visible={editVisible} onClose={() => setEditVisible(false)}>
-      <CModalHeader onClose={() => setVisible(false)}>
-        <CModalTitle>Edit Patient</CModalTitle>
-      </CModalHeader>
-      <CModalBody>
-
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardBody>
-              <CForm className="row g-3">
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputEmail4">First name</CFormLabel>
-                  <CFormInput value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} type="text" id="inputEmail4" />
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputPassword4">Last name</CFormLabel>
-                  <CFormInput value={editLastName} onChange={(e) => setEditLastName(e.target.value)} type="text" id="inputPassword4" />
-                </CCol>
-                <CCol xs={6}>
-                  <CFormLabel htmlFor="inputAddress">Date of birth</CFormLabel>
-                  <CFormInput value={editDob} type="date" onChange={(e) => setEditDob(e.target.value)} id="inputAddress" />
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="inputState">Gender</CFormLabel>
-                  <CFormSelect onChange={(e) => setEditGender(e.target.value)} id="inputState">
-                    <option>Choose...</option>
-                    <option selected={editGender == 'male' ? 'selected' : ''} value='male'>Male</option>
-                    <option selected={editGender == 'female' ? 'selected' : ''} value='female'>Female</option>
-                  </CFormSelect>
-                </CCol>
-                <CCol xs={12}>
-                  <CFormCheck checked={editStatus ? 'checked' : ''} type="checkbox" onChange={(e) => setEditStatus(e.target.value)} id="gridCheck" label="Active" />
-                </CCol>
-              </CForm>
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CModalBody>
-      <CModalFooter>
-        <CButton color="secondary" onClick={() => setEditVisible(false)}>
-          Close
-        </CButton>
-        <CButton color="primary" onClick={() => editPatient()}>Save changes</CButton>
-      </CModalFooter>
-    </CModal>
 
     <CModal visible={deleteVisible} onClose={() => setDeleteVisible(false)}>
       <CModalHeader onClose={() => setDeleteVisible(false)}>

@@ -304,7 +304,7 @@ const Appointments = (props) => {
                 {/*</CCol>*/}
                 <CCol md={6}>
                   <CFormLabel htmlFor="cmsid">CMS ID</CFormLabel>
-                  <CFormInput onChange={(e) => setCmsId(e.target.value)} type="text" id="cmsid" />
+                  <CFormInput onChange={(e) => setCmsId(e.target.value)} type="number" id="cmsid" />
                 </CCol>
                 {/*<CCol md={6}>*/}
                 {/*  <CFormLabel htmlFor="inputState">Status</CFormLabel>*/}
@@ -343,7 +343,7 @@ const Appointments = (props) => {
               </CCol>
               <CCol md={6}>
                 <CFormLabel htmlFor="cmsid">CMS ID</CFormLabel>
-                <CFormInput value={editCmsId} onChange={(e) => setEditCmsId(e.target.value)} type="text" id="title" />
+                <CFormInput value={editCmsId} onChange={(e) => setEditCmsId(e.target.value)} type="number" id="title" />
               </CCol>
             </CForm>
           </CCardBody>
@@ -357,8 +357,6 @@ const Appointments = (props) => {
         <CButton color="primary" onClick={() => editCarePlan()}>Save changes</CButton>
       </CModalFooter>
     </CModal>
-
-
       <CModal visible={deleteVisible} onClose={() => setDeleteVisible(false)}>
         <CModalHeader onClose={() => setDeleteVisible(false)}>
           <CModalTitle>Confirmation</CModalTitle>

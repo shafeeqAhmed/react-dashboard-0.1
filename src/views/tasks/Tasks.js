@@ -158,7 +158,7 @@ const Tasks = (props) => {
   const editTask = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     const encounterId = new URLSearchParams(search).get('encounter_id');
-
+    alert(encounterId)
     const data = {
       "resourceType": "Task",
       "id": selectedId,
@@ -166,7 +166,7 @@ const Tasks = (props) => {
         {
           "url": "http://fhir.medlix.org/StructureDefinition/task-cms-id",
           // "valueString": editCmsId
-          "valueString": '1'
+          "valueString": selectedId
         },
         // {
         //   "url": "http://fhir.medlix.org/StructureDefinition/time-since-last-execution",
@@ -192,8 +192,8 @@ const Tasks = (props) => {
           }
         ]
       },
-      // "description": description,
-      "description": 'description',
+      "description": description,
+      // "description": 'description',
       "encounter": {
         "reference": `Encounter/${encounterId}`
       },
@@ -222,7 +222,7 @@ const Tasks = (props) => {
 
   const setAndEditModal = (item) => {
     // setRequesting(true)
-
+    console.log(item)
     setSelectedId(item.id)
     setEditStatus(item.status)
     setEditPriority(item.priority)
@@ -374,14 +374,14 @@ const Tasks = (props) => {
                 <CForm className="row g-3">
                   <CCol xs={12}>
                     <CFormLabel htmlFor="cmsid">CMS ID </CFormLabel>
-                    <CFormInput type="text" onChange={(e) => setCmsId(e.target.value)}
+                    <CFormInput type="number" onChange={(e) => setCmsId(e.target.value)}
                                 id="cmsid" placeholder="CMS id"/>
                   </CCol>
                   <CCol md={12}>
                     <CFormLabel htmlFor="priority">Priority</CFormLabel>
                     <CFormSelect onChange={(e) => setPriority(e.target.value)} id="priority">
                       <option>Choose...</option>
-                      <option value='routine'>Routine</option>
+                      <option selected={true} value='routine'>Routine</option>
                     </CFormSelect>
                   </CCol>
 
@@ -389,7 +389,7 @@ const Tasks = (props) => {
                     <CFormLabel htmlFor="code">Code</CFormLabel>
                     <CFormSelect onChange={(e) => setCode(e.target.value)} id="code">
                       <option>Choose...</option>
-                      <option value='tasks.simple-task'>Simple Task</option>
+                      <option selected={true} value='tasks.simple-task'>Simple Task</option>
                       <option value='tasks.measurement'>Measurement</option>
                       <option value='tasks.questionnaire'>Questionnaire</option>
                     </CFormSelect>
@@ -403,7 +403,7 @@ const Tasks = (props) => {
                     <CFormLabel htmlFor="status">Status</CFormLabel>
                     <CFormSelect onChange={(e) => setStatus(e.target.value)} id="status">
                       <option>Choose...</option>
-                      <option value='accepted'>Accepted</option>
+                      <option selected={true} value='accepted'>Accepted</option>
                     </CFormSelect>
                   </CCol>
 
@@ -432,7 +432,7 @@ const Tasks = (props) => {
                 <CForm className="row g-3">
                   <CCol xs={12}>
                     <CFormLabel htmlFor="cmsid">CMS ID </CFormLabel>
-                    <CFormInput type="text" onChange={(e) => setEditCmsId(e.target.value)}
+                    <CFormInput type="number" onChange={(e) => setEditCmsId(e.target.value)}
                                 value={editCmsId}
                                 id="cmsid" placeholder="CMS id"/>
                   </CCol>

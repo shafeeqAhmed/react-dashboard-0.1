@@ -312,7 +312,8 @@ const Appointments = (props) => {
     })
   }
   const navigateTasks = (item) => {
-    history.push(`tasks?encounter_id=${item.id}`)
+    const patient_id = new URLSearchParams(search).get('patient_id');
+    history.push(`tasks?encounter_id=${item.id}&patient_id=${patient_id}`)
   }
 
 
@@ -562,7 +563,7 @@ const Appointments = (props) => {
                   <CFormLabel htmlFor="status">Status</CFormLabel>
                   <CFormSelect value={editStatus} onChange={(e) => setEditStatus(e.target.value)} id="status">
                     <option>Choose...</option>
-                    <option value='booked'>Booked</option>
+                    <option selected value='booked'>Booked</option>
                     <option value='confirmed'>Confirmed</option>
                     <option value='completed'>Completed</option>
 
