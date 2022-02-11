@@ -106,10 +106,10 @@ const routes = [
   { path: '/widgets', name: 'Widgets', component: Widgets },
 
 
+  { path: '/patients/appointments', name: 'Appointments', component: Appointments },
+  { path: '/patients/CarePlans', name: 'Care Plans', component: CarePlans },
+  { path: '/patients/measurements', name: 'Measurements', component: Measurements },
   { path: '/patients', name: 'patients', component: Patients },
-  { path: '/appointments', name: 'patients / appointments', component: Appointments },
-  { path: '/CarePlans', name: 'patients / care plan', component: CarePlans },
-  { path: '/measurements', name: 'patients / measurement', component: Measurements },
   { path: '/tasks', name: 'patients / appointments / tasks', component: Tasks }
 
 ]

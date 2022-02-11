@@ -160,13 +160,13 @@ const Patients = () => {
   }
 
   const patientAppointments = (id) => {
-    history.push("/appointments?patient_id="+id);
+    history.push("/patients/appointments?patient_id="+id);
   }
   const patientCarePlan = (id) => {
-    history.push("/CarePlans?patient_id="+id);
+    history.push("/patients/CarePlans?patient_id="+id);
   }
   const patientMeasurement = (id) => {
-    history.push("/measurements?patient_id="+id);
+    history.push("/patients/measurements?patient_id="+id);
   }
 
   const deletePatient = () => {
