@@ -45,7 +45,7 @@ const Tasks = (props) => {
 
   // new Appointment fields
 
-  const [status, setStatus] = useState(false);
+  const [status, setStatus] = useState();
   const [priority, setPriority] = useState();
   const [code, setCode] = useState();
   const [description, setDescription] = useState("");
