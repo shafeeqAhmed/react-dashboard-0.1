@@ -30,10 +30,7 @@ import {
   CDropdownMenu,
   CDropdownItem, CPaginationItem, CPagination
 } from '@coreui/react'
-import { DocsCallout, DocsExample } from 'src/components'
 import { Link, useHistory} from 'react-router-dom'
-import CIcon from "@coreui/icons-react";
-import {cilBell} from "@coreui/icons";
 
 const Patients = () => {
 
@@ -42,8 +39,9 @@ const Patients = () => {
   const [visible, setVisible] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
   const [deleteVisible, setDeleteVisible] = useState(false)
-  const [pagination, setPagination] = useState(false)
-
+  const [urlPagination, setUrlPagination] = React.useState(null)
+  const [isFirstPage, setIsFirstPage] = React.useState(true)
+  const [searching, setSearching] = React.useState(true)
 
 
   // new patient fields
@@ -65,20 +63,16 @@ const Patients = () => {
   const history = useHistory()
 
   useEffect(() => {
-    fetchPatients();
+    fetchRecords();
   }, [])
 
-  const fetchPatients = (url = '') => {
-    var get_patients_url = ''
-    if(url === '') {
-       get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient';
-    } else {
-       get_patients_url = url
-    }
+  const fetchRecords = (url = null) => {
+    const get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient';
+
     setRequesting(true);
-    axios.get(get_patients_url).then((response) => {
+    axios.get(url ? url : get_patients_url).then((response) => {
+      checkPagination(response.data)
       var patientsList = [];
-      setPagination(response.data.link)
       response.data.entry.forEach((item, index) => {
         patientsList.push({
             name: item.resource?.name[0]?.given?.join(' '),
@@ -114,39 +108,22 @@ const Patients = () => {
 
     axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=Patient', data).then((response) => {
       setVisible(false)
-      fetchPatients()
+      fetchRecords()
     }).catch((e)=>{
       setVisible(false)
     })
   }
-  const getPaginationHtml = (pagination) => {
-    if(pagination) {
-      return (
-        <CPagination className="justify-content-end" aria-label="Page navigation example">
-          <CPaginationItem disabled>Previous</CPaginationItem>
-          {/**/}
-          {pagination?.map((item, index) => {
-            return (
-              // eslint-disable-next-line react/jsx-key
-              <CPaginationItem  active={item.relation == 'self'} onClick={() => fetchPatients(item.url)}>{++index}</CPaginationItem>
-            )
-          })}
-          <CPaginationItem>Next</CPaginationItem>
-        </CPagination>
-      )
-    }
-
-  }
 
   const setAndEditModal = (item) => {
     console.log('item', item);
+
      var names = item.name.split(' ')
 
     setEditFirstName(names[0])
     setEditLastName(names[1] ?? "")
     setEditGender(item.gender)
     setEditDob(item.dob)
-    setEditStatus(item.status)
+    setEditStatus(item.isActive)
 
     setSelectedPatientId(item.id)
     setEditVisible(true)
@@ -174,6 +151,7 @@ const Patients = () => {
     axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedPatientId, data).then((response) => {
       console.log(response);
       setEditVisible(false)
+      fetchRecords()
     }).catch((e)=>{
       setEditVisible(false)
       console.log(e)
@@ -197,12 +175,52 @@ const Patients = () => {
     axios.delete(delete_patient_url).then((response) => {
       setRequesting(false);
       setDeleteVisible(false);
-      fetchPatients();
+      fetchRecords();
     }).catch((err) => {
       setRequesting(false);
       setDeleteVisible(false);
-      fetchPatients();
+      fetchRecords();
     })
+  }
+//pagination functions
+  const getCtParamFromUrl = (url = null) => {
+    const urlParams = url.split('?')[1]
+    const params = urlParams.split('&')
+    const ctParam = params.find((param) => param.includes('ct=')).split('=')[1]
+    return ctParam
+  }
+  const checkPagination = (response) => {
+    if (response.link) {
+      const nextLink = response.link.find((link) => link.relation === 'next')
+      if (nextLink) {
+        const nextUrl = nextLink.url
+        const nextPagination = getCtParamFromUrl(nextUrl)
+
+        if (nextPagination) {
+
+          let baseUrl = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient';
+
+          const nextUrlWithPagination = `${baseUrl}&ct=${nextPagination}`
+          setUrlPagination(nextUrlWithPagination)
+        }
+      } else {
+        setUrlPagination(null)
+        setSearching(false)
+      }
+    } else {
+      setUrlPagination(null)
+      setSearching(false)
+    }
+  }
+  const handleNextPagination = () => {
+    if (urlPagination) {
+      setIsFirstPage(false)
+      fetchRecords(urlPagination)
+    }
+  }
+  const handleFirstPagination = () => {
+    setIsFirstPage(true)
+    fetchRecords()
   }
 
 
@@ -217,6 +235,21 @@ const Patients = () => {
           </CCardHeader>
           <CCardBody>
               <CTable>
+                <CTableCaption>
+                  <span className="float-start">List of Patient</span>
+                  <CPagination align="end">
+                    {!isFirstPage && (
+                      <CPaginationItem  className="btn"  itemType="prev" onClick={handleFirstPagination}>
+                        &laquo; Prev
+                      </CPaginationItem>
+                    )}
+                    {urlPagination && (
+                      <CPaginationItem className="btn" itemType="next" onClick={handleNextPagination}>
+                        Next &raquo;
+                      </CPaginationItem>
+                    )}
+                  </CPagination>
+                </CTableCaption>
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
@@ -305,7 +338,7 @@ const Patients = () => {
                   <CFormLabel htmlFor="inputState">Gender</CFormLabel>
                   <CFormSelect onChange={(e) => setGender(e.target.value)} id="inputState">
                     <option>Choose...</option>
-                    <option value='male'>Male</option>
+                    <option selected={true} value='male'>Male</option>
                     <option value='female'>Female</option>
                   </CFormSelect>
                 </CCol>

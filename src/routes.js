@@ -104,11 +104,13 @@ const routes = [
   { path: '/notifications/modals', name: 'Modals', component: Modals },
   { path: '/notifications/toasts', name: 'Toasts', component: Toasts },
   { path: '/widgets', name: 'Widgets', component: Widgets },
-  { path: '/patients', name: 'Patients', component: Patients },
-  { path: '/appointments', name: 'Appointments', component: Appointments },
-  { path: '/CarePlans', name: 'Care Plans', component: CarePlans },
-  { path: '/measurements', name: 'Measurement', component: Measurements },
-  { path: '/tasks', name: 'Tasks', component: Tasks }
+
+
+  { path: '/patients', name: 'patients', component: Patients },
+  { path: '/appointments', name: 'patients / appointments', component: Appointments },
+  { path: '/CarePlans', name: 'patients / care plan', component: CarePlans },
+  { path: '/measurements', name: 'patients / measurement', component: Measurements },
+  { path: '/tasks', name: 'patients / appointments / tasks', component: Tasks }
 
 ]
 
