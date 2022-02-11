@@ -40,7 +40,7 @@ const AppBreadcrumb = () => {
             {...(breadcrumb.active ? { active: true } : { href: breadcrumb.pathname })}
             key={index}
           >
-            {breadcrumb.name}
+            {breadcrumb.name.toLowerCase()}
           </CBreadcrumbItem>
         )
       })}

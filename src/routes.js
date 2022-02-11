@@ -104,6 +104,8 @@ const routes = [
   { path: '/notifications/modals', name: 'Modals', component: Modals },
   { path: '/notifications/toasts', name: 'Toasts', component: Toasts },
   { path: '/widgets', name: 'Widgets', component: Widgets },
+
+
   { path: '/patients', name: 'Patients', component: Patients },
   { path: '/appointments', name: 'Appointments', component: Appointments },
   { path: '/CarePlans', name: 'Care Plans', component: CarePlans },
