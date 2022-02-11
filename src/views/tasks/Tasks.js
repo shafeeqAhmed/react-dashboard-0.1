@@ -115,8 +115,8 @@ const Tasks = (props) => {
       // "groupIdentifier": {
       //   "value": "de589d09-f57a-43bb-696c-5568282559b1"
       // },
-      // "status": "accepted",
-      "status": status,
+      "status": "accepted",
+      // "status": status,
       "statusReason": {
         "text": "Created"
       },
