@@ -241,6 +241,8 @@ const Tasks = (props) => {
     setEditPeriod(item.period)
     setEditDescription(item.description)
     setEditVisible(true)
+    setEditExecutionStart(item.exStart)
+    setEditExecutionEnd(item.exEnd)
 
   }
   const deleteTask = () => {
@@ -402,12 +404,12 @@ const Tasks = (props) => {
                   </CCol>
 
                   <CCol md={6}>
-                  <CFormLabel htmlFor="start">Execution Start</CFormLabel>
-                  <CFormInput type='datetime-local' onChange={(e) => setExecutionStart(e.target.value)} id="start" />
+                  <CFormLabel htmlFor="start">Execution Start </CFormLabel>
+                  <CFormInput type='datetime-local' onChange={(e) => setEditExecutionStart(e.target.value)} value={editExecutionStart} id="start" />
                 </CCol>
                 <CCol md={6}>
-                  <CFormLabel htmlFor="end">Execution End</CFormLabel>
-                  <CFormInput type='datetime-local' onChange={(e) => setExecutionEnd(e.target.value)} id="end" />
+                  <CFormLabel htmlFor="end">Execution End </CFormLabel>
+                  <CFormInput type='datetime-local' onChange={(e) => setEditExecutionEnd(e.target.value)} value={editExecutionEnd} id="end" />
                 </CCol>
 
                   <CCol md={12}>
