@@ -92,6 +92,7 @@ const Appointments = (props) => {
             end: item.resource.end,
             comment: item.resource.comment,
             status: item.resource.status,
+            encounter_id: item.resource.extension ? filterExtensionId(item) : null
         })
       })
       setRequesting(false);
@@ -315,9 +316,15 @@ const Appointments = (props) => {
   }
   const navigateTasks = (item) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
-    history.push(`tasks?encounter_id=${item.id}&patient_id=${patient_id}`)
+    history.push(`tasks?encounter_id=${item.encounter_id}&patient_id=${patient_id}`)
   }
 
+
+  const filterExtensionId = (item) => {
+    let encounterString = item.resource.extension[0].url;
+    let encounterId = encounterString.substring(encounterString.lastIndexOf('/')+1, encounterString.length-1);
+    return encounterId;
+  }
 
 
   //pagination functions
