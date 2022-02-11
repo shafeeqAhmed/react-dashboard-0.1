@@ -252,7 +252,7 @@ const Patients = () => {
                 </CTableCaption>
                 <CTableHead>
                   <CTableRow>
-                    <CTableHeaderCell scope="col">#</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Name</CTableHeaderCell>
                     <CTableHeaderCell scope="col">DOB</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Gender</CTableHeaderCell>
@@ -266,7 +266,7 @@ const Patients = () => {
                     {patients.map((item, index) => {
                       return (
                         <CTableRow key={item.id}>
-                          <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
+                          <CTableHeaderCell scope="row">{item.id}</CTableHeaderCell>
                           <CTableDataCell>{item.name}</CTableDataCell>
                           <CTableDataCell>{item.dob}</CTableDataCell>
                           <CTableDataCell>{item.gender}</CTableDataCell>

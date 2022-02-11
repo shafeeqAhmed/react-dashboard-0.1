@@ -87,6 +87,8 @@ const Appointments = (props) => {
             // name: item.resource?.name[0]?.given?.join(' '),
             id: item.resource.id,
             start: item.resource.start,
+            service_type: item.resource.appointmentType.coding[0].code,
+            appointment_type: item.resource.serviceType[0]?.coding[0].code,
             end: item.resource.end,
             comment: item.resource.comment,
             status: item.resource.status,
@@ -389,10 +391,12 @@ const Appointments = (props) => {
 
                 <CTableHead>
                   <CTableRow>
-                    <CTableHeaderCell scope="col">#</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                     {/*<CTableHeaderCell scope="col">ID</CTableHeaderCell>*/}
                     <CTableHeaderCell scope="col">Start</CTableHeaderCell>
                     <CTableHeaderCell scope="col">End</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Service Type</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Appointment Type</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Comment</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
@@ -403,10 +407,13 @@ const Appointments = (props) => {
                     {appointmentsList?.map((item, index) => {
                       return (
                         <CTableRow key={item.id}>
-                          <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
+                          <CTableHeaderCell scope="row">{item.id}</CTableHeaderCell>
                           {/*<CTableDataCell>{item.id}</CTableDataCell>*/}
                           <CTableDataCell>{item.start}</CTableDataCell>
                           <CTableDataCell>{item.end}</CTableDataCell>
+                          <CTableDataCell>{item.service_type}</CTableDataCell>
+                          <CTableDataCell>{item.appointment_type}</CTableDataCell>
+
                           <CTableDataCell>{item.status}</CTableDataCell>
                           <CTableDataCell>
                             {item.comment}
@@ -477,7 +484,7 @@ const Appointments = (props) => {
 
                 <CCol xs={6}>
                   <CFormLabel htmlFor="appointmentTypeCode">Appointment Type Code</CFormLabel>
-                  <CFormInput type="text" onChange={(e) => setAppointmentTypeCode(e.target.value)} id="appointmentTypeCode" placeholder="Type Service Type Code" />
+                  <CFormInput type="text" onChange={(e) => setAppointmentTypeCode(e.target.value)} id="appointmentTypeCode" placeholder="Type Appointment Type Code" />
                 </CCol>
 
 

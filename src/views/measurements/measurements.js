@@ -201,7 +201,7 @@ const Appointments = (props) => {
 
                 <CTableHead>
                   <CTableRow>
-                    <CTableHeaderCell scope="col">#</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Title</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Action</CTableHeaderCell>
@@ -213,7 +213,7 @@ const Appointments = (props) => {
                     {carePlansList?.map((item, index) => {
                       return (
                         <CTableRow key={item.id}>
-                          <CTableHeaderCell scope="row">{index+1}</CTableHeaderCell>
+                          <CTableHeaderCell scope="row">{item.id}</CTableHeaderCell>
                           <CTableDataCell>{item.title}</CTableDataCell>
                           <CTableDataCell>{item.status}</CTableDataCell>
                           <CTableDataCell>

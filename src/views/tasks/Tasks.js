@@ -50,6 +50,8 @@ const Tasks = (props) => {
   const [code, setCode] = useState();
   const [description, setDescription] = useState("");
   const [cmsId, setCmsId] = useState("");
+  const [executionStart, setExecutionStart] = useState("")
+  const [executionEnd, setExecutionEnd] = useState("")
 
 
   const search = useLocation().search;
@@ -61,6 +63,8 @@ const Tasks = (props) => {
   const [editDescription, setEditDescription] = useState("");
   const [editCmsId, setEditCmsId] = useState("");
   const [editPeriod, setEditPeriod] = useState("");
+  const [editExecutionStart, setEditExecutionStart] = useState("")
+  const [editExecutionEnd, setEditExecutionEnd] = useState("")
 
 
   useEffect(() => {
@@ -85,7 +89,9 @@ const Tasks = (props) => {
           priority: item.resource.priority,
           status: item.resource.status,
           description: item.resource.description,
-          cmsId: item.resource.extension[0].valueString
+          cmsId: item.resource.extension[0].valueString,
+          exStart: item.resource.executionPeriod?.start,
+          exEnd: item.resource.executionPeriod?.end
           // code: item.resource.code.config[0].code,
           // cmsid: item.resource.extension[0]
         })
@@ -138,7 +144,8 @@ const Tasks = (props) => {
         "reference": `Encounter/${encounterId}`
       },
       "executionPeriod": {
-        "start": "2022-01-28T16:00:00.6831150Z"
+        "start": executionStart,
+        "end": executionEnd
       },
       "authoredOn": "2022-01-25T14:54:10.6831150Z",
       "lastModified": "2022-01-25T14:54:10.6831150Z",
@@ -201,7 +208,8 @@ const Tasks = (props) => {
         "reference": `Encounter/${encounterId}`
       },
       "executionPeriod": {
-        "start": "2022-01-28T16:00:00.6831150Z"
+        "start": editExecutionStart,
+        "end": editExecutionEnd
       },
       "authoredOn": "2022-01-25T14:54:10.6831150Z",
       "lastModified": "2022-01-25T14:54:10.6831150Z",
@@ -315,9 +323,10 @@ const Tasks = (props) => {
               </CTableCaption>
               <CTableHead>
                 <CTableRow>
-                  <CTableHeaderCell scope="col">#</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                   {/*<CTableHeaderCell scope="col">ID</CTableHeaderCell>*/}
-                  <CTableHeaderCell scope="col">Period</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Start</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">End</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Priority</CTableHeaderCell>
                   <CTableHeaderCell scope="col">CMS ID</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Description</CTableHeaderCell>
@@ -331,9 +340,10 @@ const Tasks = (props) => {
                 {tasksList?.map((item, index) => {
                   return (
                     <CTableRow key={item.id}>
-                      <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                      <CTableHeaderCell scope="row">{item.id}</CTableHeaderCell>
                       {/*<CTableDataCell>{item.id}</CTableDataCell>*/}
-                      <CTableDataCell>{item.period}</CTableDataCell>
+                      <CTableDataCell>{item.exStart}</CTableDataCell>
+                      <CTableDataCell>{item.exEnd}</CTableDataCell>
                       <CTableDataCell>{item.priority}</CTableDataCell>
                       <CTableDataCell>{item.cmsId}</CTableDataCell>
                       <CTableDataCell>{item.description}</CTableDataCell>
@@ -390,6 +400,15 @@ const Tasks = (props) => {
                       <option selected={true} value='routine'>Routine</option>
                     </CFormSelect>
                   </CCol>
+
+                  <CCol md={6}>
+                  <CFormLabel htmlFor="start">Execution Start</CFormLabel>
+                  <CFormInput type='datetime-local' onChange={(e) => setExecutionStart(e.target.value)} id="start" />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="end">Execution End</CFormLabel>
+                  <CFormInput type='datetime-local' onChange={(e) => setExecutionEnd(e.target.value)} id="end" />
+                </CCol>
 
                   <CCol md={12}>
                     <CFormLabel htmlFor="code">Code</CFormLabel>
@@ -449,6 +468,15 @@ const Tasks = (props) => {
                       <option selected={true} value='routine'>Routine</option>
                     </CFormSelect>
                   </CCol>
+
+                  <CCol md={6}>
+                  <CFormLabel htmlFor="start">Execution Start</CFormLabel>
+                  <CFormInput value={editExecutionStart} type='datetime-local' onChange={(e) => setEditExecutionStart(e.target.value)} id="start" />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="end">Execution End</CFormLabel>
+                  <CFormInput value={editExecutionEnd} type='datetime-local' onChange={(e) => setEditExecutionEnd(e.target.value)} id="end" />
+                </CCol>
 
                   <CCol md={12}>
                     <CFormLabel htmlFor="code">Code</CFormLabel>

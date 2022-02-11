@@ -109,9 +109,8 @@ const routes = [
   { path: '/patients/appointments', name: 'Appointments', component: Appointments },
   { path: '/patients/CarePlans', name: 'Care Plans', component: CarePlans },
   { path: '/patients/measurements', name: 'Measurements', component: Measurements },
-  { path: '/patients', name: 'patients', component: Patients },
-  { path: '/tasks', name: 'patients / appointments / tasks', component: Tasks }
-
+  { path: '/patients/tasks', name: 'Tasks', component: Tasks },
+  { path: '/patients', name: 'patients', component: Patients }
 ]
 
 export default routes
