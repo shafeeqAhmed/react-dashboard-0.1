@@ -101,6 +101,10 @@ const Appointments = (props) => {
       "subject":{
         "reference":"Patient/"+patient_id
       },
+      "ValueQuantity": {
+        "value": 22,
+        "unit": "degrees celsius"
+      }
     }
     axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=CarePlan', data).then((response) => {
       fetchRecords();
@@ -128,6 +132,10 @@ const Appointments = (props) => {
       "subject":{
         "reference":"Patient/"+patient_id
       },
+      "ValueQuantity": {
+        "value": 22,
+        "unit": "degrees celsius"
+      }
     }
     const url = process.env.REACT_APP_BASE_EDIT_URL+'&resource=CarePlan/'+selectedId
     axios.put(url, data).then((response) => {
@@ -259,7 +267,6 @@ const Appointments = (props) => {
                         <CTableRow key={item.id}>
                           <CTableHeaderCell scope="row">{item.id}</CTableHeaderCell>
                           <CTableDataCell>{item.title}</CTableDataCell>
-                          <CTableDataCell>{item.title}</CTableDataCell>
                           <CTableDataCell>{item.cmsid}</CTableDataCell>
                           <CTableDataCell>{item.intent}</CTableDataCell>
                           <CTableDataCell>{item.status}</CTableDataCell>
@@ -288,7 +295,7 @@ const Appointments = (props) => {
           </CCardBody>
         </CCard>
       </CCol>
-    <CModal visible={visible} onClose={() => setVisible(false)}>
+    <CModal  backdrop={'static'}  visible={visible} onClose={() => setVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
         <CModalTitle>Add Care Plan</CModalTitle>
       </CModalHeader>
@@ -331,7 +338,7 @@ const Appointments = (props) => {
       </CModalFooter>
     </CModal>
 
-    <CModal visible={editVisible} onClose={() => setEditVisible(false)}>
+    <CModal  backdrop={'static'}  visible={editVisible} onClose={() => setEditVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
         <CModalTitle>Edit Patient</CModalTitle>
       </CModalHeader>

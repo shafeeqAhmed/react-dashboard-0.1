@@ -107,8 +107,6 @@ const Tasks = (props) => {
     setRequesting(true)
     const patient_id = new URLSearchParams(search).get('patient_id');
     const encounterId = new URLSearchParams(search).get('encounter_id');
-    alert(executionStart)
-    alert(executionEnd)
     const data = {
       "resourceType": "Task",
       // "id": "e180f26c-2b98-48cf-a35a-b1cfcadb000b",
@@ -382,7 +380,7 @@ const Tasks = (props) => {
           </CCardBody>
         </CCard>
       </CCol>
-      <CModal visible={visible} onClose={() => setVisible(false)}>
+      <CModal  backdrop={'static'}  visible={visible} onClose={() => setVisible(false)}>
         <CModalHeader onClose={() => setVisible(false)}>
           <CModalTitle>Add Task</CModalTitle>
         </CModalHeader>
@@ -407,11 +405,11 @@ const Tasks = (props) => {
 
                   <CCol md={6}>
                   <CFormLabel htmlFor="start">Execution Start </CFormLabel>
-                  <CFormInput type='datetime-local' onChange={(e) => setExecutionStart(e.target.value)} value={editExecutionStart} id="start" />
+                    <CFormInput type='datetime-local' onChange={(e) => setExecutionStart(e.target.value)}  id="start" />
                 </CCol>
                 <CCol md={6}>
                   <CFormLabel htmlFor="end">Execution End </CFormLabel>
-                  <CFormInput type='datetime-local' onChange={(e) => setExecutionEnd(e.target.value)} value={editExecutionEnd} id="end" />
+                  <CFormInput  type='datetime-local' onChange={(e) => setExecutionEnd(e.target.value)} id="end" />
                 </CCol>
 
                   <CCol md={12}>
@@ -449,7 +447,7 @@ const Tasks = (props) => {
         </CModalFooter>
       </CModal>
 
-      <CModal visible={editVisible} onClose={() => setEditVisible(false)}>
+      <CModal backdrop={'static'}  visible={editVisible} onClose={() => setEditVisible(false)}>
         <CModalHeader onClose={() => setVisible(false)}>
           <CModalTitle>Edit Task</CModalTitle>
         </CModalHeader>

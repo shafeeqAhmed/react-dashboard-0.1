@@ -67,7 +67,7 @@ const Patients = () => {
   }, [])
 
   const fetchRecords = (url = null) => {
-    const get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient';
+    const get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient?_sort=-_lastUpdated';
 
     setRequesting(true);
     axios.get(url ? url : get_patients_url).then((response) => {
@@ -312,7 +312,7 @@ const Patients = () => {
           </CCardBody>
         </CCard>
       </CCol>
-    <CModal visible={visible} onClose={() => setVisible(false)}>
+    <CModal backdrop={'static'}  visible={visible} onClose={() => setVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
         <CModalTitle>Add Patient</CModalTitle>
       </CModalHeader>
@@ -358,7 +358,7 @@ const Patients = () => {
       </CModalFooter>
     </CModal>
 
-    <CModal visible={editVisible} onClose={() => setEditVisible(false)}>
+    <CModal backdrop={'static'}  visible={editVisible} onClose={() => setEditVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
         <CModalTitle>Edit Patient</CModalTitle>
       </CModalHeader>

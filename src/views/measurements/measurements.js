@@ -233,7 +233,7 @@ const Appointments = (props) => {
           </CCardBody>
         </CCard>
       </CCol>
-    <CModal visible={visible} onClose={() => setVisible(false)}>
+    <CModal  backdrop={'static'}  visible={visible} onClose={() => setVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
         <CModalTitle>Add Measurement</CModalTitle>
       </CModalHeader>

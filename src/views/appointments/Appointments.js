@@ -49,6 +49,7 @@ const Appointments = (props) => {
   const [serviceTypeDisplay, setServiceTypeDisplay] = useState();
   const [appointmentTypeCode, setAppointmentTypeCode] = useState();
   const [appointmentTypeDisplay, setAppointmentTypeDisplay] = useState();
+  const [calenderCode, setCalenderCode] = useState();
   const [comment, setComment] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
@@ -64,6 +65,8 @@ const Appointments = (props) => {
   const [editServiceTypeDisplay, setEditServiceTypeDisplay] = useState();
   const [editAppointmentTypeCode, setEditAppointmentTypeCode] = useState();
   const [editAppointmentTypeDisplay, setEditAppointmentTypeDisplay] = useState();
+  const [editCalenderCode, setEditCalenderCode] = useState();
+  const [editEncounterId, seteditEncounterId] = useState();
   const [editComment, setEditComment] = useState("");
   const [editStart, setEditStart] = useState("");
   const [editEnd, setEditEnd] = useState("");
@@ -83,6 +86,7 @@ const Appointments = (props) => {
       checkPagination(response.data)
       var appointmentList = [];
       response.data.entry?.forEach((item, index) => {
+        console.log(item)
         appointmentList.push({
             // name: item.resource?.name[0]?.given?.join(' '),
             id: item.resource.id,
@@ -92,7 +96,8 @@ const Appointments = (props) => {
             end: item.resource.end,
             comment: item.resource.comment,
             status: item.resource.status,
-            encounter_id: item.resource.extension ? filterExtensionId(item) : null
+            encounter_id: filterExtensionId(item),
+            calenderCode: getCalenderCode(item)
         })
       })
       setRequesting(false);
@@ -103,7 +108,12 @@ const Appointments = (props) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
       "resourceType":"Appointment",
-      "status":'booked',
+      "status": status,
+      "extension": [
+        {
+          "url": "http://fhir.medlix.org/StructureDefinition/appointment-schedule-id",
+          "valueString": calenderCode
+        }],
       "serviceType":[
         {
           "coding":[
@@ -122,6 +132,7 @@ const Appointments = (props) => {
           }
         ]
       },
+
       "start":start+":00+00:00",
       "end":end+":00+00:00",
       // "start": "2021-12-15T12:00:00+00:00",
@@ -145,7 +156,8 @@ const Appointments = (props) => {
       addAppointmentEncounter(response.data.id);
       setVisible(false)
     }).catch((e)=>{
-      setVisible(false)
+      alert('this is something going wrong please try again!')
+      // setVisible(false)
       console.log(e)
     })
   }
@@ -181,7 +193,7 @@ const Appointments = (props) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
       "resourceType":"Appointment",
-      "status":'booked',
+      "status":status,
       "id": appointmentId,
       "serviceType":[
         {
@@ -203,7 +215,12 @@ const Appointments = (props) => {
       },
       "extension": [
         {
-            "url": `http://fhir.medlix.org/StructureDefinition/${enc.data.id}`
+            "url": 'encounter-id',
+            "valueString": `${enc.data.id}`
+        },
+        {
+          "url": "http://fhir.medlix.org/StructureDefinition/appointment-schedule-id",
+          "valueString": calenderCode
         }
       ],
       "comment":comment,
@@ -233,7 +250,6 @@ const Appointments = (props) => {
     const url = process.env.REACT_APP_BASE_GET_URL+'&resource=Appointment/'+item.id
     axios.get(url).then((response) => {
       const data = response.data
-
       setEditVisible(true)
       setRequesting(false)
       setEditStatus(data.status)
@@ -244,6 +260,8 @@ const Appointments = (props) => {
       setEditAppointmentTypeCode(data.appointmentType.coding[0].code)
       setEditAppointmentTypeDisplay(data.appointmentType.coding[0].display)
       setEditComment(data.comment)
+      seteditEncounterId(data.extension.length > 0 ? data.extension[0].valueString : '')
+      setEditCalenderCode(data.extension.length > 0 ? data.extension[1].valueString : '')
       // setEditVisible(true)
 
 
@@ -258,11 +276,17 @@ const Appointments = (props) => {
     const data = {
       "resourceType": "Appointment",
       "id": selectedId,
-      // "meta": {
-      //     "versionId": "1",
-      //     "lastUpdated": "2022-02-09T13:39:39.374+00:00"
-      // },
-      "status": "booked",
+      "extension": [
+        {
+          "url": 'encounter-id',
+          "valueString": editEncounterId
+        },
+        {
+          "url": "http://fhir.medlix.org/StructureDefinition/appointment-schedule-id",
+          "valueString": editCalenderCode
+        }
+      ],
+      "status": editStatus,
       "serviceType": [
           {
               "coding": [
@@ -298,7 +322,8 @@ const Appointments = (props) => {
       fetchRecords()
       setEditVisible(false)
     }).catch((e)=>{
-      setEditVisible(false)
+      alert('this is something going wrong please try again!')
+      // setEditVisible(false)
     })
 
   }
@@ -315,15 +340,23 @@ const Appointments = (props) => {
     })
   }
   const navigateTasks = (item) => {
+    console.log(item)
     const patient_id = new URLSearchParams(search).get('patient_id');
     history.push(`tasks?encounter_id=${item.encounter_id}&patient_id=${patient_id}`)
   }
 
 
   const filterExtensionId = (item) => {
-    let encounterString = item.resource.extension[0].url;
-    let encounterId = encounterString.substring(encounterString.lastIndexOf('/')+1, encounterString.length-1);
-    return encounterId;
+    if (Object.keys(item.resource.extension).includes('0')) {
+      return item.resource.extension[0].valueString;
+    }
+    return null
+  }
+  const getCalenderCode = (item) => {
+    if(Object.keys(item.resource.extension).includes('1')) {
+     return item.resource.extension[1].valueString;
+    }
+    return null
   }
 
 
@@ -461,7 +494,7 @@ const Appointments = (props) => {
           </CCardBody>
         </CCard>
       </CCol>
-    <CModal visible={visible} onClose={() => setVisible(false)}>
+    <CModal backdrop={'static'}  visible={visible} onClose={() => setVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
         <CModalTitle>Add Appointment</CModalTitle>
       </CModalHeader>
@@ -500,6 +533,11 @@ const Appointments = (props) => {
                   <CFormInput type="text" onChange={(e) => setAppointmentTypeDisplay(e.target.value)} id="appointmentType" placeholder="Appointment Type" />
                 </CCol>
 
+                <CCol xs={12}>
+                  <CFormLabel htmlFor="calenderCode">Calender Code </CFormLabel>
+                  <CFormInput type="text" onChange={(e) => setCalenderCode(e.target.value)} id="calenderCode" placeholder="Calender Code" />
+                </CCol>
+
                 <CCol md={12}>
                   <CFormLabel htmlFor="comment">Comment</CFormLabel>
                   <CFormTextarea onChange={(e) => setComment(e.target.value)} id="comment"></CFormTextarea>
@@ -507,11 +545,11 @@ const Appointments = (props) => {
 
                 <CCol md={12}>
                   <CFormLabel htmlFor="status">Status</CFormLabel>
-                  <CFormSelect onChange={(e) => setStatus(e.target.value)} id="status">
+                  <CFormSelect defaultValue={'booked'} onChange={(e) => setStatus(e.target.value)} id="status">
                     <option>Choose...</option>
-                    <option value='booked' selected={editStatus === 'bookend'}>Booked</option>
-                    <option value='confirmed'  selected={editStatus === 'confirmed'}>Confirmed</option>
-                    <option value='completed'  selected={editStatus === 'completed'}>Completed</option>
+                    <option value='booked'>Booked</option>
+                    <option value='confirmed'>Confirmed</option>
+                    <option value='completed'>Completed</option>
 
                   </CFormSelect>
                 </CCol>
@@ -529,7 +567,7 @@ const Appointments = (props) => {
       </CModalFooter>
     </CModal>
 
-    <CModal visible={editVisible} onClose={() => setEditVisible(false)}>
+    <CModal backdrop={'static'}  visible={editVisible} onClose={() => setEditVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
         <CModalTitle>Edit Appointment</CModalTitle>
       </CModalHeader>
@@ -567,6 +605,10 @@ const Appointments = (props) => {
                   <CFormLabel htmlFor="appointmentType">Appointment Type </CFormLabel>
                   <CFormInput value={editAppointmentTypeDisplay} type="text" onChange={(e) => setEditAppointmentTypeDisplay(e.target.value)} id="appointmentType" placeholder="Appointment Type" />
                 </CCol>
+                <CCol xs={12}>
+                  <CFormLabel htmlFor="appointmentType">calendar  Code </CFormLabel>
+                  <CFormInput value={editCalenderCode} type="text" onChange={(e) => setEditCalenderCode(e.target.value)} id="appointmentType" placeholder="Appointment Type" />
+                </CCol>
 
                 <CCol md={12}>
                   <CFormLabel htmlFor="comment">Comment</CFormLabel>
@@ -575,7 +617,7 @@ const Appointments = (props) => {
 
                 <CCol md={12}>
                   <CFormLabel htmlFor="status">Status</CFormLabel>
-                  <CFormSelect value={editStatus} onChange={(e) => setEditStatus(e.target.value)} id="status">
+                  <CFormSelect defaultValue={editStatus} onChange={(e) => setEditStatus(e.target.value)} id="status">
                     <option>Choose...</option>
                     <option selected value='booked'>Booked</option>
                     <option value='confirmed'>Confirmed</option>
