@@ -80,28 +80,32 @@ const Appointments = (props) => {
   const fetchRecords = (url = null) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     setPatientId(patient_id)
-    let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Appointment&actor=Patient/${patient_id}&_sort=appointment-sort-start`;
+    // let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Appointment&actor=Patient/${patient_id}&_sort=appointment-sort-start`;
+    let patients_url = process.env.REACT_APP_BASE_URL+`/Appointment?actor=Patient/${patient_id}?_sort=lastUpdate`;
     setRequesting(true);
-    axios.get(url ? url : get_patients_url).then((response) => {
+    axios.get(url ? url : patients_url)
+      .then((response) => {
       checkPagination(response.data)
       var appointmentList = [];
       response.data.entry?.forEach((item, index) => {
-        console.log(item)
         appointmentList.push({
             // name: item.resource?.name[0]?.given?.join(' '),
+            name: '',
             id: item.resource.id,
-            start: item.resource.start,
-            service_type: item.resource.appointmentType.coding[0].code,
-            appointment_type: item.resource.serviceType[0]?.coding[0].code,
-            end: item.resource.end,
-            comment: item.resource.comment,
-            status: item.resource.status,
+            start: item.resource?.start,
+            service_type: item.resource?.appointmentType.coding[0].code,
+            appointment_type: item.resource?.serviceType[0]?.coding[0].code,
+            end: item.resource?.end,
+            comment: item.resource?.comment,
+            status: item.resource?.status,
             encounter_id: filterExtensionId(item),
             calenderCode: getCalenderCode(item)
         })
       })
       setRequesting(false);
       setAppointmentsList(appointmentList);
+    }).catch(error => {
+      console.log(error)
     })
   }
   const addAppointment = () => {
@@ -149,8 +153,10 @@ const Appointments = (props) => {
     }
 
 
+    let patients_url = process.env.REACT_APP_BASE_URL+`/Appointment?actor=Patient/${patient_id}`;
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
+    // axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
+    axios.post(patients_url, data)
       .then((response) => {
         fetchRecords()
       addAppointmentEncounter(response.data.id);
@@ -178,8 +184,10 @@ const Appointments = (props) => {
         }
       ]
     }
+    let url = process.env.REACT_APP_BASE_URL+`/Encounter?Appointment=${appointmentId}`;
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Encounter`, data)
+    // axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Encounter`, data)
+    axios.post(url, data)
       .then((response) => {
     //   updating encounter to appointment extension
         updateEncountOnAppointment(response, appointmentId)
@@ -235,7 +243,10 @@ const Appointments = (props) => {
         },
       ]
     }
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL+`&resource=Appointment/${appointmentId}`,
+    let url = process.env.REACT_APP_BASE_URL+`/Appointment/${appointmentId}`;
+
+    // axios.put(process.env.REACT_APP_BASE_EDIT_URL+`&resource=Appointment/${appointmentId}`,
+    axios.put(url,
       data
     ).then((resp) => {
         console.log(resp)
@@ -247,7 +258,9 @@ const Appointments = (props) => {
   const setAndEditModal = (item) => {
     setRequesting(true)
     setSelectedId(item.id)
-    const url = process.env.REACT_APP_BASE_GET_URL+'&resource=Appointment/'+item.id
+    let url = process.env.REACT_APP_BASE_URL+`/Appointment/${item.id}`;
+    // const url = process.env.REACT_APP_BASE_GET_URL+'&resource=Appointment/'+item.id
+
     axios.get(url).then((response) => {
       const data = response.data
       setEditVisible(true)
@@ -317,8 +330,10 @@ const Appointments = (props) => {
         },
       ]
     }
+    let url = process.env.REACT_APP_BASE_URL+`/Appointment/${selectedId}`;
 
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Appointment/'+selectedId, data).then((response) => {
+    // axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Appointment/'+selectedId, data).then((response) => {
+    axios.put(url, data).then((response) => {
       fetchRecords()
       setEditVisible(false)
     }).catch((e)=>{
@@ -327,9 +342,11 @@ const Appointments = (props) => {
     })
 
   }
-  const deleteAppointment = () => {let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Appointment/'+selectedId;
+  const deleteAppointment = () => {
+    let url = process.env.REACT_APP_BASE_URL+`/Appointment/${selectedId}`;
+    // let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Appointment/'+selectedId;
     setRequesting(true);
-    axios.delete(delete_patient_url).then((response) => {
+    axios.delete(url).then((response) => {
       setRequesting(false);
       setDeleteVisible(false);
       fetchRecords();
@@ -376,8 +393,7 @@ const Appointments = (props) => {
 
         if (nextPagination) {
           const patient_id = new URLSearchParams(search).get('patient_id');
-
-          let baseUrl = process.env.REACT_APP_BASE_GET_URL+`&resource=Appointment&actor=Patient/${patient_id}&_sort=appointment-sort-start`;
+          let baseUrl = process.env.REACT_APP_BASE_URL+`/Appointment?actor=Patient/${patient_id}?_sort=lastUpdate`;
           const nextUrlWithPagination = `${baseUrl}&ct=${nextPagination}`
           setUrlPagination(nextUrlWithPagination)
         }
@@ -437,6 +453,7 @@ const Appointments = (props) => {
                     <CTableHeaderCell scope="col">End</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Service Type</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Appointment Type</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Calender Code</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Comment</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
@@ -453,6 +470,7 @@ const Appointments = (props) => {
                           <CTableDataCell>{item.end}</CTableDataCell>
                           <CTableDataCell>{item.service_type}</CTableDataCell>
                           <CTableDataCell>{item.appointment_type}</CTableDataCell>
+                          <CTableDataCell>{item.calenderCode}</CTableDataCell>
 
                           <CTableDataCell>{item.status}</CTableDataCell>
                           <CTableDataCell>
@@ -548,8 +566,15 @@ const Appointments = (props) => {
                   <CFormSelect defaultValue={'booked'} onChange={(e) => setStatus(e.target.value)} id="status">
                     <option>Choose...</option>
                     <option value='booked'>Booked</option>
-                    <option value='confirmed'>Confirmed</option>
-                    <option value='completed'>Completed</option>
+                    <option value='proposed'>Proposed</option>
+                    <option value='pending'>Pending</option>
+                    <option value='arrived'>Arrived</option>
+                    <option value='fulfilled'>Fulfilled</option>
+                    <option value='cancelled'>Cancelled</option>
+                    <option value='noshow'>No show</option>
+                    <option value='entered-in-error'>Entered-in-error</option>
+                    <option value='checked-in'>Checked-in</option>
+                    <option value='waitlist'>Waitlist</option>
 
                   </CFormSelect>
                 </CCol>
@@ -619,9 +644,16 @@ const Appointments = (props) => {
                   <CFormLabel htmlFor="status">Status</CFormLabel>
                   <CFormSelect defaultValue={editStatus} onChange={(e) => setEditStatus(e.target.value)} id="status">
                     <option>Choose...</option>
-                    <option selected value='booked'>Booked</option>
-                    <option value='confirmed'>Confirmed</option>
-                    <option value='completed'>Completed</option>
+                    <option value='booked'>Booked</option>
+                    <option value='proposed'>Proposed</option>
+                    <option value='pending'>Pending</option>
+                    <option value='arrived'>Arrived</option>
+                    <option value='fulfilled'>Fulfilled</option>
+                    <option value='cancelled'>Cancelled</option>
+                    <option value='noshow'>No show</option>
+                    <option value='entered-in-error'>Entered-in-error</option>
+                    <option value='checked-in'>Checked-in</option>
+                    <option value='waitlist'>Waitlist</option>
 
                   </CFormSelect>
                 </CCol>

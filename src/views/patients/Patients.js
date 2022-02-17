@@ -67,24 +67,31 @@ const Patients = () => {
   }, [])
 
   const fetchRecords = (url = null) => {
-    const get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient?_sort=-_lastUpdated';
+    // const get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient?_sort=-_lastUpdated';
+    // const get_patients_url = process.env.REACT_APP_BASE_GET_URL+'/Patient?_sort=lastUpdate';
+    const get_patients_url = process.env.REACT_APP_BASE_URL+'/Patient?_sort=lastUpdate';
 
     setRequesting(true);
     axios.get(url ? url : get_patients_url).then((response) => {
       checkPagination(response.data)
       var patientsList = [];
       response.data.entry.forEach((item, index) => {
-        patientsList.push({
+        console.log(item.resource.id)
+        if(Object.keys(item.resource).includes('name')) {
+          patientsList.push({
             name: item.resource?.name[0]?.given?.join(' '),
             dob: item.resource?.birthDate,
             isActive: item.resource?.active,
             gender: item.resource?.gender,
             id: item.resource?.id
-        })
+          })
+        }
+
       })
       setRequesting(false);
       setPatients(patientsList);
     }).catch((e)=>{
+      console.log(e)
       setRequesting(false)
     })
   }
@@ -106,7 +113,7 @@ const Patients = () => {
       "birthDate": dob
     }
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=Patient', data).then((response) => {
+    axios.post(process.env.REACT_APP_BASE_URL+'/Patient', data).then((response) => {
       setVisible(false)
       fetchRecords()
     }).catch((e)=>{
@@ -147,8 +154,10 @@ const Patients = () => {
       "gender": editGender,
       "birthDate": editDob
     }
+    const  patients_url = process.env.REACT_APP_BASE_URL+'/Patient/'+selectedPatientId;
 
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedPatientId, data).then((response) => {
+    // axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedPatientId, data).then((response) => {
+    axios.put(patients_url, data).then((response) => {
       console.log(response);
       setEditVisible(false)
       fetchRecords()
@@ -170,7 +179,7 @@ const Patients = () => {
   }
 
   const deletePatient = () => {
-    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Patient/'+selectedPatientId;
+    let delete_patient_url = process.env.REACT_APP_BASE_URL+'/Patient/'+selectedPatientId;
     setRequesting(true);
     axios.delete(delete_patient_url).then((response) => {
       setRequesting(false);
@@ -198,9 +207,12 @@ const Patients = () => {
 
         if (nextPagination) {
 
-          let baseUrl = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient';
+          let baseUrl = process.env.REACT_APP_BASE_GET_URL+'/Patient';
+          const nextUrlWithPagination = `${baseUrl}?ct=${nextPagination}`
+          console.log(nextPagination)
+          console.log(baseUrl)
+          console.log(nextUrlWithPagination)
 
-          const nextUrlWithPagination = `${baseUrl}&ct=${nextPagination}`
           setUrlPagination(nextUrlWithPagination)
         }
       } else {

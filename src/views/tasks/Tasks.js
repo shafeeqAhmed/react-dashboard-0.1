@@ -77,9 +77,11 @@ const Tasks = (props) => {
     setPatientId(patient_id)
     setEncounterId(encounter_id)
 
-    let get_tasks_url = process.env.REACT_APP_BASE_GET_URL + `&resource=Task&encounter=${encounter_id}`;
+    // let get_tasks_url = process.env.REACT_APP_BASE_GET_URL + `&resource=Task&encounter=${encounter_id}`;
+    let tasks_url = process.env.REACT_APP_BASE_URL+`/Task?encounter=${encounter_id}`;
+
     setRequesting(true);
-    axios.get(url ? url : get_tasks_url).then((response) => {
+    axios.get(url ? url : tasks_url).then((response) => {
       checkPagination(response.data)
       var tasksList = [];
       response.data.entry?.forEach((item, index) => {
@@ -155,8 +157,10 @@ const Tasks = (props) => {
 
     }
 
+    let tasks_url = process.env.REACT_APP_BASE_URL+`/Task?encounter=${encounterId}`;
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL + `&resource=Task&encounter=${encounterId}`, data)
+    // axios.post(process.env.REACT_APP_BASE_POST_URL + `&resource=Task&encounter=${encounterId}`, data)
+    axios.post(tasks_url, data)
       .then((response) => {
         fetchTask()
         setVisible(false)
@@ -218,8 +222,10 @@ const Tasks = (props) => {
       }
 
     }
+    let tasks_url = process.env.REACT_APP_BASE_URL+`/Task?encounter=${selectedId}`;
 
-    axios.put(process.env.REACT_APP_BASE_EDIT_URL + `&resource=Task&id=${selectedId}`, data)
+    axios.put(tasks_url, data)
+    // axios.put(tasks_url, data)
 
       .then((response) => {
       setRequesting(false)
@@ -246,7 +252,10 @@ const Tasks = (props) => {
 
   }
   const deleteTask = () => {
-    let delete_task_url = process.env.REACT_APP_BASE_DELETE_URL+`&resource=Task/${selectedId}`;
+    // let delete_task_url = process.env.REACT_APP_BASE_DELETE_URL+`&resource=Task/${selectedId}`
+
+    let delete_task_url = process.env.REACT_APP_BASE_URL+`/Task/${selectedId}`;
+
     setRequesting(true);
     axios.delete(delete_task_url).then((response) => {
       setRequesting(false);
@@ -273,7 +282,8 @@ const Tasks = (props) => {
         const nextPagination = getCtParamFromUrl(nextUrl)
 
         if (nextPagination) {
-          let baseUrl = process.env.REACT_APP_BASE_GET_URL + `&resource=Task&encounter=${encounterId}`;
+          // let baseUrl = process.env.REACT_APP_BASE_GET_URL + `&resource=Task&encounter=${encounterId}`;
+          let baseUrl = process.env.REACT_APP_BASE_URL+`/Task?encounter=${encounterId}`;
 
           const nextUrlWithPagination = `${baseUrl}&ct=${nextPagination}`
           setUrlPagination(nextUrlWithPagination)

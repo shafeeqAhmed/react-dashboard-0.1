@@ -62,9 +62,11 @@ const Appointments = (props) => {
 
   const fetchRecords = (url = null) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
-    let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Observation&subject=Patient/${patient_id}`;
+    let mearsurement_url = process.env.REACT_APP_BASE_URL+`/Observation?subject=Patient/${patient_id}?_sort=lastUpdate`;
+
+    // let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Observation&subject=Patient/${patient_id}`;
     setRequesting(true);
-    axios.get(url ? url : get_patients_url).then((response) => {
+    axios.get(url ? url : mearsurement_url).then((response) => {
       checkPagination(response.data)
       var carePlans = [];
       response.data.entry?.forEach((item, index) => {
@@ -107,8 +109,10 @@ const Appointments = (props) => {
             "code": "/min"
         }
     }
+    let mearsurement_url = process.env.REACT_APP_BASE_URL+`/Observation?subject=Patient/${patient_id}`;
 
-    axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Observation&subject=Patient/${patient_id}`, data)
+    // axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Observation&subject=Patient/${patient_id}`, data)
+    axios.post(mearsurement_url, data)
       .then((response) => {
       fetchRecords()
       setVisible(false)
@@ -118,7 +122,10 @@ const Appointments = (props) => {
     })
   }
   const deleteMeasurement = () => {
-    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Observation/'+selectedId;
+    // let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Observation/'+selectedId;
+
+    let delete_patient_url = process.env.REACT_APP_BASE_URL+`/Observation/${selectedId}`;
+
     setRequesting(true);
     axios.delete(delete_patient_url).then((response) => {
       setRequesting(false);
@@ -147,7 +154,10 @@ const Appointments = (props) => {
 
         if (nextPagination) {
           const patient_id = new URLSearchParams(search).get('patient_id');
-          let baseUrl = process.env.REACT_APP_BASE_GET_URL+`&resource=Observation&subject=Patient/${patient_id}`;
+          // let baseUrl = process.env.REACT_APP_BASE_GET_URL+`&resource=Observation&subject=Patient/${patient_id}`;
+
+          let baseUrl = process.env.REACT_APP_BASE_URL+`/Observation?subject=Patient/${patient_id}`;
+
 
           const nextUrlWithPagination = `${baseUrl}&${nextPagination}`
           setUrlPagination(nextUrlWithPagination)
