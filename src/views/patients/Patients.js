@@ -237,7 +237,7 @@ const Patients = () => {
 
           </CCardHeader>
           <CCardBody>
-              <CTable>
+              <CTable align={'middle'}>
                 <CTableCaption>
                   <span className="float-start">List of Patient</span>
                   <CPagination align="end">

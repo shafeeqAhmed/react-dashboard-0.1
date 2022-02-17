@@ -312,7 +312,7 @@ const Tasks = (props) => {
 
           </CCardHeader>
           <CCardBody>
-            <CTable>
+            <CTable align={'middle'}>
               <CTableCaption>
                 <span className="float-start">List of Tasks</span>
                 <CPagination align="end">

@@ -237,7 +237,7 @@ const Appointments = (props) => {
 
           </CCardHeader>
           <CCardBody>
-              <CTable>
+              <CTable align={'middle'}>
                 <CTableCaption>
                   <span className="float-start">List of Care Plan</span>
                   <CPagination align="end">
