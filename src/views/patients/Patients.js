@@ -122,7 +122,6 @@ const Patients = () => {
   }
 
   const setAndEditModal = (item) => {
-    console.log('item', item);
 
      var names = item.name.split(' ')
 
@@ -158,7 +157,6 @@ const Patients = () => {
 
     // axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedPatientId, data).then((response) => {
     axios.put(patients_url, data).then((response) => {
-      console.log(response);
       setEditVisible(false)
       fetchRecords()
     }).catch((e)=>{
@@ -209,10 +207,6 @@ const Patients = () => {
 
           let baseUrl = process.env.REACT_APP_BASE_GET_URL+'/Patient';
           const nextUrlWithPagination = `${baseUrl}?ct=${nextPagination}`
-          console.log(nextPagination)
-          console.log(baseUrl)
-          console.log(nextUrlWithPagination)
-
           setUrlPagination(nextUrlWithPagination)
         }
       } else {

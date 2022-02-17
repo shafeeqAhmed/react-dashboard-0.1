@@ -80,7 +80,6 @@ const Appointments = (props) => {
           cmsid: item.resource.identifier[0]?.value
         })
       })
-      console.log(carePlans);
       // console.log(appointmentList)
       setRequesting(false);
       setCarePlansList(carePlans);
@@ -91,25 +90,27 @@ const Appointments = (props) => {
 
     const data = {
       "resourceType": "CarePlan",
-      "identifier":[
+      "meta": {
+        "versionId": "1",
+        "lastUpdated": "2022-01-05T15:21:30.028+00:00"
+      },
+      "identifier": [
         {
           "system":"medlix",
           "value":cmsId,
         }
       ],
-
-      "status": 'active',
-      "intent": 'order',
+      "status": "active",
+      "intent": "plan",
       "title": title,
-      "subject":{
-        "reference":"Patient/"+patient_id
+      "subject": {
+            "reference":"Patient/"+patient_id
       },
-      "ValueQuantity": {
-        "value": 22,
-        "unit": "degrees celsius"
-      }
     }
-    axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=CarePlan', data).then((response) => {
+    const url = process.env.REACT_APP_BASE_URL+'/CarePlan'
+
+    // axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=CarePlan', data).then((response) => {
+    axios.post(url, data).then((response) => {
       fetchRecords();
       setVisible(false)
     }).catch((e)=>{
@@ -121,26 +122,27 @@ const Appointments = (props) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     const data = {
       "resourceType": "CarePlan",
-      "id":selectedId,
-      "identifier":[
+      "id": selectedId,
+      "meta": {
+        "versionId": "2",
+        "lastUpdated": "2022-02-17T11:43:01.869+00:00"
+      },
+      "identifier": [
         {
           "system":"medlix",
           "value":editCmsId,
         }
       ],
-
-      "status": 'active',
-      "intent": 'order',
+      "status": "active",
+      "intent": "plan",
       "title": editTitle,
-      "subject":{
-        "reference":"Patient/"+patient_id
+      "subject": {
+            "reference":"Patient/"+patient_id
       },
-      "ValueQuantity": {
-        "value": 22,
-        "unit": "degrees celsius"
-      }
     }
-    const url = process.env.REACT_APP_BASE_EDIT_URL+'&resource=CarePlan/'+selectedId
+    // const url = process.env.REACT_APP_BASE_EDIT_URL+'&resource=CarePlan/'+selectedId
+    const url = process.env.REACT_APP_BASE_URL+'/CarePlan/'+selectedId
+
     axios.put(url, data).then((response) => {
       fetchRecords();
       setEditVisible(false)
@@ -151,7 +153,9 @@ const Appointments = (props) => {
     })
   }
   const deleteCarePlan = () => {
-    let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=CarePlan/'+selectedId;
+    // let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=CarePlan/'+selectedId;
+    const delete_patient_url = process.env.REACT_APP_BASE_URL+'/CarePlan/'+selectedId
+
     setRequesting(true);
     axios.delete(delete_patient_url).then((response) => {
       setRequesting(false);
@@ -166,7 +170,9 @@ const Appointments = (props) => {
 
   const setAndEditModal = (item) => {
     setRequesting(true)
-    const url = process.env.REACT_APP_BASE_GET_URL+'&resource=CarePlan/'+item.id
+    // const url = process.env.REACT_APP_BASE_GET_URL+'&resource=CarePlan/'+item.id
+    const url = process.env.REACT_APP_BASE_URL+'/CarePlan/'+item.id
+
     axios.get(url).then((response) => {
       const data = response.data
       setSelectedId(item.id)
@@ -201,7 +207,8 @@ const Appointments = (props) => {
 
         if (nextPagination) {
           const patient_id = new URLSearchParams(search).get('patient_id');
-          let baseUrl = process.env.REACT_APP_BASE_GET_URL+`&resource=CarePlan&subject=Patient/${patient_id}`;
+          // let baseUrl = process.env.REACT_APP_BASE_GET_URL+`&resource=CarePlan&subject=Patient/${patient_id}`;
+          let baseUrl = process.env.REACT_APP_BASE_URL+`/CarePlan?subject=Patient/${patient_id}`;
 
 
           const nextUrlWithPagination = `${baseUrl}&${nextPagination}`

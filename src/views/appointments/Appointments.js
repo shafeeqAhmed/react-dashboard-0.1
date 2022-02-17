@@ -89,8 +89,6 @@ const Appointments = (props) => {
       var appointmentList = [];
       response.data.entry?.forEach((item, index) => {
         appointmentList.push({
-            // name: item.resource?.name[0]?.given?.join(' '),
-            name: '',
             id: item.resource.id,
             start: item.resource?.start,
             service_type: item.resource?.appointmentType.coding[0].code,
@@ -98,8 +96,8 @@ const Appointments = (props) => {
             end: item.resource?.end,
             comment: item.resource?.comment,
             status: item.resource?.status,
-            encounter_id: filterExtensionId(item),
-            calenderCode: getCalenderCode(item)
+            encounter_id: getRecordValue(item,0),
+            calenderCode: getRecordValue(item,1)
         })
       })
       setRequesting(false);
@@ -117,7 +115,8 @@ const Appointments = (props) => {
         {
           "url": "http://fhir.medlix.org/StructureDefinition/appointment-schedule-id",
           "valueString": calenderCode
-        }],
+        }
+        ],
       "serviceType":[
         {
           "coding":[
@@ -158,7 +157,6 @@ const Appointments = (props) => {
     // axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
     axios.post(patients_url, data)
       .then((response) => {
-        fetchRecords()
       addAppointmentEncounter(response.data.id);
       setVisible(false)
     }).catch((e)=>{
@@ -246,10 +244,8 @@ const Appointments = (props) => {
     let url = process.env.REACT_APP_BASE_URL+`/Appointment/${appointmentId}`;
 
     // axios.put(process.env.REACT_APP_BASE_EDIT_URL+`&resource=Appointment/${appointmentId}`,
-    axios.put(url,
-      data
-    ).then((resp) => {
-        console.log(resp)
+    axios.put(url, data).then((resp) => {
+      fetchRecords()
     }).catch((err) => {
         console.log(err)
     })
@@ -363,20 +359,12 @@ const Appointments = (props) => {
   }
 
 
-  const filterExtensionId = (item) => {
-    if (Object.keys(item.resource.extension).includes('0')) {
-      return item.resource.extension[0].valueString;
+  const getRecordValue = (item,index) => {
+    if (Object.keys(item.resource.extension).includes(index.toString())) {
+      return item.resource.extension[index].valueString;
     }
     return null
   }
-  const getCalenderCode = (item) => {
-    if(Object.keys(item.resource.extension).includes('1')) {
-     return item.resource.extension[1].valueString;
-    }
-    return null
-  }
-
-
   //pagination functions
   const getCtParamFromUrl = (url = null) => {
     const urlParams = url.split('?')[1]
