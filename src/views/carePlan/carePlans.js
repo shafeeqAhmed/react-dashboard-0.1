@@ -62,7 +62,10 @@ const Appointments = (props) => {
   const fetchRecords = (url = null) => {
 
     const patient_id = new URLSearchParams(search).get('patient_id');
-    let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=CarePlan&subject=Patient/${patient_id}`;
+    // let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=CarePlan&subject=Patient/${patient_id}`;
+
+    let get_patients_url = process.env.REACT_APP_BASE_URL+`/CarePlan?subject=Patient/${patient_id}?_sort=lastUpdate`;
+
     setRequesting(true);
     axios.get(url ? url : get_patients_url).then((response) => {
       checkPagination(response.data)
