@@ -80,7 +80,6 @@ const Appointments = (props) => {
   const fetchRecords = (url = null) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     setPatientId(patient_id)
-    // let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Appointment&actor=Patient/${patient_id}&_sort=appointment-sort-start`;
     let patients_url = process.env.REACT_APP_BASE_URL+`/Appointment?actor=Patient/${patient_id}?_sort=lastUpdate`;
     setRequesting(true);
     axios.get(url ? url : patients_url)
@@ -154,7 +153,6 @@ const Appointments = (props) => {
 
     let patients_url = process.env.REACT_APP_BASE_URL+`/Appointment?actor=Patient/${patient_id}`;
 
-    // axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Appointment&actor=Patient/${patientId}&_sort=appointment-sort-start`, data)
     axios.post(patients_url, data)
       .then((response) => {
       addAppointmentEncounter(response.data.id);
@@ -184,7 +182,6 @@ const Appointments = (props) => {
     }
     let url = process.env.REACT_APP_BASE_URL+`/Encounter?Appointment=${appointmentId}`;
 
-    // axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Encounter`, data)
     axios.post(url, data)
       .then((response) => {
     //   updating encounter to appointment extension
@@ -243,7 +240,6 @@ const Appointments = (props) => {
     }
     let url = process.env.REACT_APP_BASE_URL+`/Appointment/${appointmentId}`;
 
-    // axios.put(process.env.REACT_APP_BASE_EDIT_URL+`&resource=Appointment/${appointmentId}`,
     axios.put(url, data).then((resp) => {
       fetchRecords()
     }).catch((err) => {
@@ -255,7 +251,6 @@ const Appointments = (props) => {
     setRequesting(true)
     setSelectedId(item.id)
     let url = process.env.REACT_APP_BASE_URL+`/Appointment/${item.id}`;
-    // const url = process.env.REACT_APP_BASE_GET_URL+'&resource=Appointment/'+item.id
 
     axios.get(url).then((response) => {
       const data = response.data
@@ -328,7 +323,6 @@ const Appointments = (props) => {
     }
     let url = process.env.REACT_APP_BASE_URL+`/Appointment/${selectedId}`;
 
-    // axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Appointment/'+selectedId, data).then((response) => {
     axios.put(url, data).then((response) => {
       fetchRecords()
       setEditVisible(false)
@@ -340,7 +334,6 @@ const Appointments = (props) => {
   }
   const deleteAppointment = () => {
     let url = process.env.REACT_APP_BASE_URL+`/Appointment/${selectedId}`;
-    // let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Appointment/'+selectedId;
     setRequesting(true);
     axios.delete(url).then((response) => {
       setRequesting(false);

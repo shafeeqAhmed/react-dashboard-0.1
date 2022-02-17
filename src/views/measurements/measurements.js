@@ -64,7 +64,6 @@ const Appointments = (props) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
     let mearsurement_url = process.env.REACT_APP_BASE_URL+`/Observation?subject=Patient/${patient_id}?_sort=lastUpdate`;
 
-    // let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=Observation&subject=Patient/${patient_id}`;
     setRequesting(true);
     axios.get(url ? url : mearsurement_url).then((response) => {
       checkPagination(response.data)
@@ -111,7 +110,6 @@ const Appointments = (props) => {
     }
     let mearsurement_url = process.env.REACT_APP_BASE_URL+`/Observation?subject=Patient/${patient_id}`;
 
-    // axios.post(process.env.REACT_APP_BASE_POST_URL+`&resource=Observation&subject=Patient/${patient_id}`, data)
     axios.post(mearsurement_url, data)
       .then((response) => {
       fetchRecords()
@@ -122,7 +120,6 @@ const Appointments = (props) => {
     })
   }
   const deleteMeasurement = () => {
-    // let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=Observation/'+selectedId;
 
     let delete_patient_url = process.env.REACT_APP_BASE_URL+`/Observation/${selectedId}`;
 
@@ -154,7 +151,6 @@ const Appointments = (props) => {
 
         if (nextPagination) {
           const patient_id = new URLSearchParams(search).get('patient_id');
-          // let baseUrl = process.env.REACT_APP_BASE_GET_URL+`&resource=Observation&subject=Patient/${patient_id}`;
 
           let baseUrl = process.env.REACT_APP_BASE_URL+`/Observation?subject=Patient/${patient_id}`;
 

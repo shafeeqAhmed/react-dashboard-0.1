@@ -62,7 +62,6 @@ const Appointments = (props) => {
   const fetchRecords = (url = null) => {
 
     const patient_id = new URLSearchParams(search).get('patient_id');
-    // let get_patients_url = process.env.REACT_APP_BASE_GET_URL+`&resource=CarePlan&subject=Patient/${patient_id}`;
 
     let get_patients_url = process.env.REACT_APP_BASE_URL+`/CarePlan?subject=Patient/${patient_id}?_sort=lastUpdate`;
 
@@ -109,7 +108,6 @@ const Appointments = (props) => {
     }
     const url = process.env.REACT_APP_BASE_URL+'/CarePlan'
 
-    // axios.post(process.env.REACT_APP_BASE_POST_URL+'&resource=CarePlan', data).then((response) => {
     axios.post(url, data).then((response) => {
       fetchRecords();
       setVisible(false)
@@ -140,7 +138,6 @@ const Appointments = (props) => {
             "reference":"Patient/"+patient_id
       },
     }
-    // const url = process.env.REACT_APP_BASE_EDIT_URL+'&resource=CarePlan/'+selectedId
     const url = process.env.REACT_APP_BASE_URL+'/CarePlan/'+selectedId
 
     axios.put(url, data).then((response) => {
@@ -153,7 +150,6 @@ const Appointments = (props) => {
     })
   }
   const deleteCarePlan = () => {
-    // let delete_patient_url = process.env.REACT_APP_BASE_DELETE_URL+'&resource=CarePlan/'+selectedId;
     const delete_patient_url = process.env.REACT_APP_BASE_URL+'/CarePlan/'+selectedId
 
     setRequesting(true);
@@ -170,7 +166,6 @@ const Appointments = (props) => {
 
   const setAndEditModal = (item) => {
     setRequesting(true)
-    // const url = process.env.REACT_APP_BASE_GET_URL+'&resource=CarePlan/'+item.id
     const url = process.env.REACT_APP_BASE_URL+'/CarePlan/'+item.id
 
     axios.get(url).then((response) => {
@@ -207,7 +202,6 @@ const Appointments = (props) => {
 
         if (nextPagination) {
           const patient_id = new URLSearchParams(search).get('patient_id');
-          // let baseUrl = process.env.REACT_APP_BASE_GET_URL+`&resource=CarePlan&subject=Patient/${patient_id}`;
           let baseUrl = process.env.REACT_APP_BASE_URL+`/CarePlan?subject=Patient/${patient_id}`;
 
 

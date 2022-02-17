@@ -77,7 +77,6 @@ const Tasks = (props) => {
     setPatientId(patient_id)
     setEncounterId(encounter_id)
 
-    // let get_tasks_url = process.env.REACT_APP_BASE_GET_URL + `&resource=Task&encounter=${encounter_id}`;
     let tasks_url = process.env.REACT_APP_BASE_URL+`/Task?encounter=${encounter_id}`;
 
     setRequesting(true);
@@ -159,7 +158,6 @@ const Tasks = (props) => {
 
     let tasks_url = process.env.REACT_APP_BASE_URL+`/Task?encounter=${encounterId}`;
 
-    // axios.post(process.env.REACT_APP_BASE_POST_URL + `&resource=Task&encounter=${encounterId}`, data)
     axios.post(tasks_url, data)
       .then((response) => {
         fetchTask()
@@ -252,8 +250,6 @@ const Tasks = (props) => {
 
   }
   const deleteTask = () => {
-    // let delete_task_url = process.env.REACT_APP_BASE_DELETE_URL+`&resource=Task/${selectedId}`
-
     let delete_task_url = process.env.REACT_APP_BASE_URL+`/Task/${selectedId}`;
 
     setRequesting(true);
@@ -282,7 +278,6 @@ const Tasks = (props) => {
         const nextPagination = getCtParamFromUrl(nextUrl)
 
         if (nextPagination) {
-          // let baseUrl = process.env.REACT_APP_BASE_GET_URL + `&resource=Task&encounter=${encounterId}`;
           let baseUrl = process.env.REACT_APP_BASE_URL+`/Task?encounter=${encounterId}`;
 
           const nextUrlWithPagination = `${baseUrl}&ct=${nextPagination}`

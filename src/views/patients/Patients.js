@@ -67,8 +67,6 @@ const Patients = () => {
   }, [])
 
   const fetchRecords = (url = null) => {
-    // const get_patients_url = process.env.REACT_APP_BASE_GET_URL+'&resource=Patient?_sort=-_lastUpdated';
-    // const get_patients_url = process.env.REACT_APP_BASE_GET_URL+'/Patient?_sort=lastUpdate';
     const get_patients_url = process.env.REACT_APP_BASE_URL+'/Patient?_sort=lastUpdate';
 
     setRequesting(true);
@@ -76,7 +74,6 @@ const Patients = () => {
       checkPagination(response.data)
       var patientsList = [];
       response.data.entry.forEach((item, index) => {
-        console.log(item.resource.id)
         if(Object.keys(item.resource).includes('name')) {
           patientsList.push({
             name: item.resource?.name[0]?.given?.join(' '),
@@ -117,7 +114,8 @@ const Patients = () => {
       setVisible(false)
       fetchRecords()
     }).catch((e)=>{
-      setVisible(false)
+      alert('something going wrong please try again!')
+      // setVisible(false)
     })
   }
 
@@ -155,7 +153,6 @@ const Patients = () => {
     }
     const  patients_url = process.env.REACT_APP_BASE_URL+'/Patient/'+selectedPatientId;
 
-    // axios.put(process.env.REACT_APP_BASE_EDIT_URL+'&resource=Patient/'+selectedPatientId, data).then((response) => {
     axios.put(patients_url, data).then((response) => {
       setEditVisible(false)
       fetchRecords()
@@ -205,7 +202,7 @@ const Patients = () => {
 
         if (nextPagination) {
 
-          let baseUrl = process.env.REACT_APP_BASE_GET_URL+'/Patient';
+          let baseUrl = process.env.REACT_APP_BASE_URL+'/Patient';
           const nextUrlWithPagination = `${baseUrl}?ct=${nextPagination}`
           setUrlPagination(nextUrlWithPagination)
         }
