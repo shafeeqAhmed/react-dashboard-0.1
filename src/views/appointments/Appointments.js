@@ -102,6 +102,7 @@ const Appointments = (props) => {
       setRequesting(false);
       setAppointmentsList(appointmentList);
     }).catch(error => {
+      setRequesting(false)
       console.log(error)
     })
   }
