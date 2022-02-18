@@ -62,7 +62,7 @@ const Appointments = (props) => {
 
   const fetchRecords = (url = null) => {
     const patient_id = new URLSearchParams(search).get('patient_id');
-    let mearsurement_url = process.env.REACT_APP_BASE_URL+`/Observation?subject=Patient/${patient_id}?_sort=lastUpdate`;
+    let mearsurement_url = process.env.REACT_APP_BASE_URL+`/Observation?subject=Patient/${patient_id}?_sort=date`;
 
     setRequesting(true);
     axios.get(url ? url : mearsurement_url).then((response) => {
@@ -74,6 +74,10 @@ const Appointments = (props) => {
               id: item.resource.id,
               title: item.resource.code.text,
               status: item.resource.status,
+              code: item.resource?.valueQuantity?.code,
+              unit: item.resource?.valueQuantity?.unit,
+              value: item.resource?.valueQuantity?.value,
+              effectiveDateTime: item.resource?.effectiveDateTime,
           })
       })
       console.log(carePlans);
@@ -102,11 +106,11 @@ const Appointments = (props) => {
             "reference": "Patient/"+patient_id
         },
         "valueQuantity": {
-            "value": 97,
-            "unit": "beats/minute",
-            "system": "http://unitsofmeasure.org/",
-            "code": "/min"
-        }
+            "value": 22,
+            "unit": "degree cesius",
+            "code": "12351"
+        },
+      "effectiveDateTime": "2022-02-16T11:53:39.723"
     }
     let mearsurement_url = process.env.REACT_APP_BASE_URL+`/Observation?subject=Patient/${patient_id}`;
 
@@ -184,7 +188,7 @@ const Appointments = (props) => {
         <CCard className="mb-4">
           <CCardHeader>
             <strong>Measurement</strong> <small>listing</small>
-            <CButton style={{float: 'right'}} onClick={() => setVisible(!visible)}>Add Measurement</CButton>
+            {/*<CButton style={{float: 'right'}} onClick={() => setVisible(!visible)}>Add Measurement</CButton>*/}
 
           </CCardHeader>
           <CCardBody>
@@ -209,6 +213,10 @@ const Appointments = (props) => {
                   <CTableRow>
                     <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Title</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Code</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Unit</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Value</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Effective Date Time</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Action</CTableHeaderCell>
 
@@ -221,6 +229,10 @@ const Appointments = (props) => {
                         <CTableRow key={item.id}>
                           <CTableHeaderCell scope="row">{item.id}</CTableHeaderCell>
                           <CTableDataCell>{item.title}</CTableDataCell>
+                          <CTableDataCell>{item.code}</CTableDataCell>
+                          <CTableDataCell>{item.unit}</CTableDataCell>
+                          <CTableDataCell>{item.value}</CTableDataCell>
+                          <CTableDataCell>{item.effectiveDateTime}</CTableDataCell>
                           <CTableDataCell>{item.status}</CTableDataCell>
                           <CTableDataCell>
                             <CButton
@@ -241,7 +253,7 @@ const Appointments = (props) => {
       </CCol>
     <CModal  backdrop={'static'}  visible={visible} onClose={() => setVisible(false)}>
       <CModalHeader onClose={() => setVisible(false)}>
-        <CModalTitle>Add Measurement</CModalTitle>
+        {/*<CModalTitle>Add Measurement</CModalTitle>*/}
       </CModalHeader>
       <CModalBody>
 

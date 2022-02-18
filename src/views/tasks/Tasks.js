@@ -57,7 +57,7 @@ const Tasks = (props) => {
   const search = useLocation().search;
 
 
-  const [editStatus, setEditStatus] = useState(false);
+  const [editStatus, setEditStatus] = useState("");
   const [editPriority, setEditPriority] = useState();
   const [editCode, setEditCode] = useState();
   const [editDescription, setEditDescription] = useState("");
@@ -91,7 +91,8 @@ const Tasks = (props) => {
           priority: item.resource.priority,
           status: item.resource.status,
           description: item.resource.description,
-          cmsId: item.resource.extension[0].valueString,
+          cmsId: item.resource?.extension[0].valueString,
+          code: item.resource?.code?.coding[0].code,
           exStart: item.resource.executionPeriod?.start,
           exEnd: item.resource.executionPeriod?.end
         })
@@ -104,6 +105,10 @@ const Tasks = (props) => {
     }))
   }
 
+
+  const getCode = (item) => {
+
+  }
   const addTask = () => {
     setRequesting(true)
     const patient_id = new URLSearchParams(search).get('patient_id');
@@ -199,8 +204,7 @@ const Tasks = (props) => {
       "code": {
         "coding": [
           {
-            "code": "tasks.measurement"
-            // "code": code
+            "code": editCode
           }
         ]
       },
@@ -242,6 +246,7 @@ const Tasks = (props) => {
     setEditStatus(item.status)
     setEditPriority(item.priority)
     setEditCmsId(item.cmsId)
+    setEditCode(item.code)
     setEditPeriod(item.period)
     setEditDescription(item.description)
     setEditVisible(true)
@@ -336,6 +341,7 @@ const Tasks = (props) => {
                   <CTableHeaderCell scope="col">End</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Priority</CTableHeaderCell>
                   <CTableHeaderCell scope="col">CMS ID</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Code</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Description</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
@@ -353,6 +359,7 @@ const Tasks = (props) => {
                       <CTableDataCell>{item.exEnd}</CTableDataCell>
                       <CTableDataCell>{item.priority}</CTableDataCell>
                       <CTableDataCell>{item.cmsId}</CTableDataCell>
+                      <CTableDataCell>{item.code.replace(/tasks./g, '')}</CTableDataCell>
                       <CTableDataCell>{item.description}</CTableDataCell>
                       <CTableDataCell>{item.status}</CTableDataCell>
 
@@ -487,7 +494,7 @@ const Tasks = (props) => {
 
                   <CCol md={12}>
                     <CFormLabel htmlFor="code">Code</CFormLabel>
-                    <CFormSelect onChange={(e) => setEditCode(e.target.value)} id="code">
+                    <CFormSelect defaultValue={editCode} onChange={(e) => setEditCode(e.target.value)} id="code">
                       <option>Choose...</option>
                       <option value='tasks.simple-task'>Simple Task</option>
                       <option selected={true} value='tasks.measurement'>Measurement</option>

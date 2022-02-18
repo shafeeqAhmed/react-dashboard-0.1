@@ -90,13 +90,13 @@ const Appointments = (props) => {
         appointmentList.push({
             id: item.resource.id,
             start: item.resource?.start,
-            service_type: item.resource?.appointmentType.coding[0].code,
-            appointment_type: item.resource?.serviceType[0]?.coding[0].code,
+            service_type: getServiceType(item),
+            appointment_type: getAppointmentType(item),
             end: item.resource?.end,
             comment: item.resource?.comment,
             status: item.resource?.status,
-            encounter_id: getRecordValue(item,0),
-            calenderCode: getRecordValue(item,1)
+            encounter_id: getRecordValue(item,'0'),
+            calenderCode: getRecordValue(item,'1')
         })
       })
       setRequesting(false);
@@ -107,6 +107,10 @@ const Appointments = (props) => {
   }
   const addAppointment = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
+    if(status == '') {
+      alert('please select status of appointment')
+      return true
+    }
     const data = {
       "resourceType":"Appointment",
       "status": status,
@@ -218,7 +222,7 @@ const Appointments = (props) => {
       },
       "extension": [
         {
-            "url": 'encounter-id',
+            "url": "http://fhir.medlix.org/StructureDefinition/task-encounter-id",
             "valueString": `${enc.data.id}`
         },
         {
@@ -276,13 +280,16 @@ const Appointments = (props) => {
   }
   const editAppointment = () => {
     const patient_id = new URLSearchParams(search).get('patient_id');
-
+    if(editStatus == '') {
+      alert('please select status of appointment')
+      return true
+    }
     const data = {
       "resourceType": "Appointment",
       "id": selectedId,
       "extension": [
         {
-          "url": 'encounter-id',
+          "url": "http://fhir.medlix.org/StructureDefinition/task-encounter-id",
           "valueString": editEncounterId
         },
         {
@@ -352,8 +359,28 @@ const Appointments = (props) => {
   }
 
 
+  const getAppointmentType = (item) => {
+    if (Object.keys(item.resource).includes('appointmentType')) {
+      if (Object.keys(item.resource.appointmentType).includes('coding')) {
+        if (Object.keys(item.resource.appointmentType.coding).includes('0')) {
+          return item.resource.appointmentType.coding[0].display
+        }
+      }
+    }
+  }
+  const getServiceType = (item) => {
+    if (Object.keys(item.resource).includes('serviceType')) {
+      if (Object.keys(item.resource.serviceType).includes('0')) {
+        if (Object.keys(item.resource.serviceType[0]).includes('coding')) {
+          if (Object.keys(item.resource.serviceType[0].coding).includes('0')) {
+            return item.resource.serviceType[0].coding[0].display
+          }
+        }
+      }
+    }
+  }
   const getRecordValue = (item,index) => {
-    if (Object.keys(item.resource.extension).includes(index.toString())) {
+    if (Object.keys(item.resource.extension).includes(index)) {
       return item.resource.extension[index].valueString;
     }
     return null
@@ -544,8 +571,8 @@ const Appointments = (props) => {
 
                 <CCol md={12}>
                   <CFormLabel htmlFor="status">Status</CFormLabel>
-                  <CFormSelect defaultValue={'booked'} onChange={(e) => setStatus(e.target.value)} id="status">
-                    <option>Choose...</option>
+                  <CFormSelect  onChange={(e) => setStatus(e.target.value)} id="status">
+                    <option value="">Choose...</option>
                     <option value='booked'>Booked</option>
                     <option value='proposed'>Proposed</option>
                     <option value='pending'>Pending</option>
@@ -624,7 +651,7 @@ const Appointments = (props) => {
                 <CCol md={12}>
                   <CFormLabel htmlFor="status">Status</CFormLabel>
                   <CFormSelect defaultValue={editStatus} onChange={(e) => setEditStatus(e.target.value)} id="status">
-                    <option>Choose...</option>
+                    <option value="">Choose...</option>
                     <option value='booked'>Booked</option>
                     <option value='proposed'>Proposed</option>
                     <option value='pending'>Pending</option>
